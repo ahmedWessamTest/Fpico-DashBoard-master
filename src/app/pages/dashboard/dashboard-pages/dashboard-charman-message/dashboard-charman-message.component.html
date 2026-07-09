@@ -1,0 +1,153 @@
+@if (aboutUsContent) {
+<div class="container">
+  <!-- English Content -->
+  <h1>English Content</h1>
+  <div class="bg-gray-900 rounded p-5">
+    <div class="grid md:grid-cols-2 gap-6">
+      <!-- English en_name -->
+      <div class="text-white">
+        <label class="font-bold">Name:</label>
+        <div *ngIf="isEditing">
+          <input
+            type="text"
+            class="form-control my-3"
+            [(ngModel)]="aboutUsContent.rows[0].en_name"
+          />
+        </div>
+        <div *ngIf="!isEditing">
+          <h1 class="text-lg">{{ aboutUsContent.rows[0].en_name }}</h1>
+        </div>
+      </div>
+      <!-- English en_title -->
+      <div class="text-white">
+        <label class="font-bold">Title:</label>
+        <div *ngIf="isEditing">
+          <input
+            type="text"
+            class="form-control my-3"
+            [(ngModel)]="aboutUsContent.rows[0].en_title"
+          />
+        </div>
+        <div *ngIf="!isEditing">
+          <h1 class="text-lg">{{ aboutUsContent.rows[0].en_title }}</h1>
+        </div>
+      </div>
+      <!-- English en_small_title -->
+      <div class="text-white">
+        <label class="font-bold">Sub Title:</label>
+        <div *ngIf="isEditing">
+          <input
+            type="text"
+            class="form-control my-3"
+            [(ngModel)]="aboutUsContent.rows[0].en_small_title"
+          />
+        </div>
+        <div *ngIf="!isEditing">
+          <h1 class="text-lg">{{ aboutUsContent.rows[0].en_small_title }}</h1>
+        </div>
+      </div>
+      <!-- English Text -->
+      <div class="text-white">
+        <label class="font-bold">Description:</label>
+        <div *ngIf="isEditing" class="!text-black">
+          <ngx-jodit [(ngModel)]="aboutUsContent.rows[0].en_text"></ngx-jodit>
+        </div>
+        <div *ngIf="!isEditing">
+          <p
+            class="!text-sm text-gray-500 text-wrap"
+            [innerHTML]="aboutUsContent.rows[0].en_text | safeHtml"
+          ></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Arabic Content -->
+  <h1>Arabic Content</h1>
+  <div class="bg-gray-900 rounded p-5">
+    <div class="grid md:grid-cols-2 gap-6 !text-end">
+      <!-- Arabic Name -->
+      <div class="text-white">
+        <label class="font-bold">الاسم:</label>
+        <div *ngIf="isEditing">
+          <input
+            type="text"
+            class="form-control my-3 !text-end"
+            [(ngModel)]="aboutUsContent.rows[0].ar_name"
+          />
+        </div>
+        <div *ngIf="!isEditing">
+          <h1 class="text-lg">{{ aboutUsContent.rows[0].ar_name }}</h1>
+        </div>
+      </div>
+      <!-- Arabic Title -->
+      <div class="text-white">
+        <label class="font-bold">العنوان:</label>
+        <div *ngIf="isEditing">
+          <input
+            type="text"
+            class="form-control my-3 !text-end"
+            [(ngModel)]="aboutUsContent.rows[0].ar_title"
+          />
+        </div>
+        <div *ngIf="!isEditing">
+          <h1 class="text-lg">{{ aboutUsContent.rows[0].ar_title }}</h1>
+        </div>
+      </div>
+      <!-- Arabic sub title -->
+      <div class="text-white">
+        <label class="font-bold">العنوان الثاني:</label>
+        <div *ngIf="isEditing">
+          <input
+            type="text"
+            class="form-control my-3 !text-end"
+            [(ngModel)]="aboutUsContent.rows[0].ar_small_title"
+          />
+        </div>
+        <div *ngIf="!isEditing">
+          <h1 class="text-lg">{{ aboutUsContent.rows[0].ar_small_title }}</h1>
+        </div>
+      </div>
+
+      <!-- Arabic Text -->
+      <div class="text-white">
+        <label class="font-bold">الوصف:</label>
+        <div *ngIf="isEditing" class="!text-black">
+          <ngx-jodit [(ngModel)]="aboutUsContent.rows[0].ar_text"></ngx-jodit>
+        </div>
+
+        <div *ngIf="!isEditing">
+          <p
+            class="!text-sm text-gray-500"
+            [innerHTML]="aboutUsContent.rows[0].ar_text | safeHtml"
+          ></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Buttons -->
+  <div class="d-flex mt-4 gap-3 align-items-center">
+    <button
+      *ngIf="!isEditing"
+      class="bg-main text-white p-3 rounded"
+      (click)="toggleEditing()"
+    >
+      Edit
+    </button>
+    <button
+      *ngIf="isEditing"
+      class="bg-main text-white p-3 rounded"
+      (click)="saveChanges()"
+    >
+      Save Changes
+    </button>
+  </div>
+</div>
+} @else {
+
+<app-loading-data-banner />
+
+}
+
+<p-toast />

@@ -1,0 +1,194 @@
+@if (partners) {
+<div class="grid">
+  <div class="col-12">
+    <div class="card px-6 py-6">
+      <p-toast></p-toast>
+      <button
+        pButton
+        pRipple
+        label="Add"
+        icon="pi pi-plus"
+        class="btn-main col-4"
+        style="margin-bottom: 10px; padding-block: 16px !important"
+        (click)="openAddPartnerDialog()"
+      ></button>
+      <p-table
+        #dt
+        [value]="partners"
+        [columns]="cols"
+        responsiveLayout="scroll"
+        [rows]="100"
+        [globalFilterFields]="['en_partner_title', 'ar_partner_title']"
+        [rowsPerPageOptions]="[100, 500, 1000]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="display {first} to {last} from {totalRecords} records"
+        selectionMode="multiple"
+        [rowHover]="true"
+        dataKey="id"
+      >
+        <ng-template pTemplate="caption">
+          <div
+            class="flex md:flex-row md:justify-content-between md:align-items-center"
+          >
+            <h5 class="m-0">Organize Partners</h5>
+            <span class="block mt-2 md:mt-0 p-input-icon-right">
+              <i class="pi pi-search"></i>
+              <input
+                #globalFilter
+                pInputText
+                type="text"
+                placeholder="search..."
+                class="w-full sm:w-auto"
+                (input)="dt.filterGlobal(globalFilter.value, 'contains')"
+              />
+            </span>
+          </div>
+        </ng-template>
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="id" class="text-center">
+              Id <p-sortIcon field="id"></p-sortIcon>
+            </th>
+            <th>Image</th>
+            <th>English Title</th>
+            <th>Arabic Title</th>
+            <th pSortableColumn="active_status">
+              Status <p-sortIcon field="active_status"></p-sortIcon>
+            </th>
+            <th>Create Date</th>
+            <th class="text-center">Edit</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-partner>
+          <tr>
+            <td class="col-1 text-center">{{ partner.id }}</td>
+            <td class="col-2">
+              <img
+                [src]="WEB_SITE_BASE_URL + 'Partner/' + partner.main_image"
+                alt="Partner Image"
+                class="w-[75px] h-[75px] rounded-full object-cover"
+              />
+            </td>
+            <td class="col-3">{{ partner.en_partner_title }}</td>
+            <td class="col-3">{{ partner.ar_partner_title }}</td>
+            <td class="col-2">
+              <p-inputSwitch
+                [(ngModel)]="partner.active_status"
+                [trueValue]="1"
+                [falseValue]="0"
+                (onChange)="toggleStatus(partner)"
+              />
+            </td>
+            <td class="col-2">{{ partner.created_at | date : "dd-MM-yy" }}</td>
+            <td class="col-1">
+              <div class="flex justify-content-center gap-2">
+                <button
+                  pButton
+                  pRipple
+                  icon="pi pi-pencil"
+                  class="p-button-rounded p-button-success mr-2"
+                  (click)="openEditPartnerDialog(partner)"
+                ></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="8" style="height: 50vh">
+              <app-no-data-found-banner></app-no-data-found-banner>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Partner Dialog for Adding and Editing -->
+    <p-dialog
+      [(visible)]="partnerDialog"
+      [style]="{ width: '450px' }"
+      header="Details"
+      [modal]="true"
+      class="p-fluid"
+      [draggable]="false"
+    >
+      <ng-template pTemplate="content">
+        <div class="field">
+          <label for="enTitle">English Title</label>
+          <input
+            type="text"
+            pInputText
+            id="enTitle"
+            [(ngModel)]="selectedPartner.en_partner_title"
+            required
+            autofocus
+            [ngClass]="{
+              'ng-invalid ng-dirty':
+                submitted && !selectedPartner.en_partner_title
+            }"
+          />
+          <small
+            class="ng-dirty ng-invalid"
+            *ngIf="submitted && !selectedPartner.en_partner_title"
+            >Required.</small
+          >
+        </div>
+
+        <div class="field">
+          <label for="arTitle">Arabic Title</label>
+          <input
+            type="text"
+            pInputText
+            id="arTitle"
+            [(ngModel)]="selectedPartner.ar_partner_title"
+            required
+            [ngClass]="{
+              'ng-invalid ng-dirty':
+                submitted && !selectedPartner.ar_partner_title
+            }"
+          />
+          <small
+            class="ng-dirty ng-invalid"
+            *ngIf="submitted && !selectedPartner.ar_partner_title"
+            >Required.</small
+          >
+        </div>
+
+        <div class="field">
+          <label for="image">Image</label>
+          <input
+            type="file"
+            pInputText
+            id="image"
+            (change)="onFileSelect($event)"
+          />
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="footer">
+        <button
+          pButton
+          pRipple
+          label="Cancel"
+          icon="pi pi-times"
+          class="p-button-text"
+          (click)="hideDialog()"
+        ></button>
+        <button
+          pButton
+          pRipple
+          label="Save"
+          icon="pi pi-check"
+          class="p-button-text"
+          (click)="savePartner()"
+        ></button>
+      </ng-template>
+    </p-dialog>
+  </div>
+</div>
+} @else {
+<app-loading-data-banner></app-loading-data-banner>
+}

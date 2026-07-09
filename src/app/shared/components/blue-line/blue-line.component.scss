@@ -1,0 +1,32 @@
+@import "variables";
+
+.blue_line {
+  display: inline-block;
+  width: 181px;
+  height: 4px;
+  border-radius: 5px;
+  background-color: $main-color;
+  position: relative;
+  &::after {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: $main-color;
+    left: -25px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  &::before {
+    content: "";
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: $main-color;
+    right: -25px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}

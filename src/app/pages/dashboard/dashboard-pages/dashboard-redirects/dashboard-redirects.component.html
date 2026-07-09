@@ -1,0 +1,114 @@
+@if (initialLoadDone) {
+<div class="grid">
+  <div class="col-12">
+    <div class="card px-6 py-6">
+      <p-toast></p-toast>
+      <ngx-spinner name="square-jelly-box" type="square-jelly-box"></ngx-spinner>
+
+      <div class="flex justify-content-between align-items-center mb-5">
+        <div>
+          <h2 class="m-0 text-2xl font-bold">SEO Redirects Manager</h2>
+          <p class="text-gray-600 mt-1">Map multiple articles to a single Arabic SEO slug redirect rules.</p>
+        </div>
+      </div>
+
+      <!-- Redirect Rules List -->
+      <div class="redirect-rules-container">
+        @for (rule of redirectRules; track $index) {
+        <div class="grid items-center grid-cols-12 align-items-end border-bottom-1 border-gray-200 py-4 mb-3">
+          <!-- Multi Select Dropdown Column -->
+          <div class="col-12 md:col-span-6 mb-3 md:mb-0">
+            <label class="block font-bold mb-2 text-gray-700">Select Articles (Displays Slug)</label>
+            <div class="custom-dropdown-container">
+              <!-- Dropdown Trigger / Selected Tags Box -->
+              <div class="dropdown-trigger-box" [class.active]="rule.isDropdownOpen"
+                (click)="toggleDropdown(rule, $event)">
+                @if (rule.selectedBlogs.length === 0) {
+                <span class="placeholder-text">Select articles...</span>
+                } @else {
+                <div class="selected-tags-wrapper">
+                  @for (blog of rule.selectedBlogs; track blog.id) {
+                  <span class="selected-tag">
+                    {{ blog.ar_slug || blog.en_slug || ('ID: ' + blog.id) }}
+                    <i class="pi pi-times remove-tag-icon" (click)="removeSelectedBlog(rule, blog.id, $event)"></i>
+                  </span>
+                  }
+                </div>
+                }
+                <i class="pi pi-chevron-down dropdown-arrow-icon"></i>
+              </div>
+
+              <!-- Floating Dropdown Menu Panel -->
+              @if (rule.isDropdownOpen) {
+              <div class="dropdown-menu-panel">
+                <!-- Search Filter -->
+                <div class="search-box-wrapper">
+                  <i class="pi pi-search search-icon"></i>
+                  <input type="text" [(ngModel)]="rule.searchQuery" (input)="onSearchChange(rule)" placeholder="Search by slug or title..."
+                    class="dropdown-search-input" (click)="$event.stopPropagation()" />
+                </div>
+
+                <!-- Options List -->
+                <div class="options-list-container" (scroll)="onDropdownScroll($event, rule)">
+                  @for (blog of blogsList; track blog.id) {
+                  <div class="option-item" [class.selected]="isBlogSelected(rule, blog)"
+                    (click)="toggleBlogSelection(rule, blog, $event)">
+                    <div class="checkbox-box">
+                      @if (isBlogSelected(rule, blog)) {
+                      <i class="pi pi-check text-white text-xs"></i>
+                      }
+                    </div>
+                    <div class="option-details">
+                      <span class="option-slug font-semibold block">{{ blog.ar_slug || blog.en_slug || 'No Slug' }}</span>
+                      <span class="option-title text-gray-500 text-xs block">{{ blog.ar_blog_title || blog.en_blog_title }}</span>
+                    </div>
+                  </div>
+                  } @empty {
+                  <div class="no-options-found">No articles found</div>
+                  }
+
+                  <!-- Scroll Loader -->
+                  @if (loadingBlogs) {
+                  <div class="dropdown-scroll-loader">
+                    <i class="pi pi-spin pi-spinner mr-2"></i> Loading articles...
+                  </div>
+                  }
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+
+          <!-- Target Slug Input Column -->
+          <div class="col-12 md:col-span-4 mb-3 md:mb-0">
+            <label class="block font-bold mb-2 text-gray-700">Target Slug (To)</label>
+            <input type="text" [(ngModel)]="rule.toSlug" placeholder="e.g. target-arabic-slug"
+              class="w-full target-slug-input" />
+          </div>
+
+          <!-- Remove Action Button Column -->
+          <div class="col-12 md:col-span-2 ">
+            <button pButton type="button" icon="pi pi-trash" label="Delete"
+              class="p-button-danger p-button-outlined w-full md:w-auto" (click)="removeRule($index)"
+              pTooltip="Remove rule" tooltipPosition="top"></button>
+          </div>
+        </div>
+        }
+      </div>
+
+      <!-- Add New Row & Action Buttons -->
+      <div
+        class="flex flex-column sm:flex-row gap-3 justify-content-between align-items-center mt-5 pt-3 border-top-1 border-gray-200">
+        <button pButton type="button" label="Add New Rule" icon="pi pi-plus"
+          class="p-button-outlined btn-main-outline px-4" (click)="addRule()" [disabled]="isSaving"></button>
+
+        <button pButton type="button" label="Save & Apply Redirects" icon="pi pi-check"
+          class="btn-main px-4 py-2 font-bold" (click)="submitRedirects()" [disabled]="isSaving"></button>
+      </div>
+
+    </div>
+  </div>
+</div>
+} @else {
+<app-loading-data-banner></app-loading-data-banner>
+}

@@ -1,0 +1,136 @@
+<form [formGroup]="addServicesForm" (ngSubmit)="submitForm()">
+  <div class="row g-3 items-start">
+    <div class="col-lg-8">
+      <p-card [header]="isEditing ? 'Edit Service' : 'Add New Service'" styleClass="mb-3 image-card">
+        <!-- Image Upload Section -->
+        <div class="col-12">
+          <!-- Current Image Display -->
+          <div *ngIf="isEditing && currentImageSrc" class="mb-3 text-center">
+            <p class="text-gray-500 mb-2">Current Service Image:</p>
+            <img [src]="currentImageSrc" alt="Current Image" style="max-height: 200px; max-width: 100%; border-radius: 6px; border: 1px solid #ddd;" />
+          </div>
+          <div class="p-field">
+            <p-fileUpload #fileUpload name="main_image" accept="image/*" [auto]="true" [chooseLabel]="'Choose Image'"
+              [uploadLabel]="'Upload'" [styleClass]="'w-full'" [cancelLabel]="'Cancel'" [showUploadButton]="true"
+              [showCancelButton]="true" [customUpload]="true" (onSelect)="onFileSelect($event)" [draggable]="true">
+              <ng-template pTemplate="content">
+                <div
+                  class="upload-area flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition">
+                  <i class="pi pi-cloud-upload text-4xl text-gray-400"></i>
+                  <p class="text-gray-500 mt-2">
+                    Drag & drop an image or
+                    <span class="text-blue-500 cursor-pointer" (click)="fileUpload.choose()">click to select</span>
+                  </p>
+                </div>
+              </ng-template>
+            </p-fileUpload>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- (AR) Service Content -->
+      <p-card header="(AR) Service Content" styleClass="p-2 mb-3">
+        <div class="p-field mb-3">
+          <input type="text" pInputText formControlName="ar_service_title" placeholder="(AR) Service Title"
+            class="p-inputtext-lg" dir="rtl" />
+        </div>
+        <div class="col-12 mt-0">
+          <div class="p-field">
+            <ngx-jodit formControlName="ar_service_text" dir="rtl"></ngx-jodit>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- (EN) Service Content -->
+      <p-card header="(EN) Service Content" styleClass="p-2 mb-3">
+        <div class="p-field mb-3">
+          <input type="text" pInputText formControlName="en_service_title" placeholder="(EN) Service Title"
+            class="p-inputtext-lg" />
+        </div>
+        <div class="col-12 mt-0">
+          <div class="p-field">
+            <ngx-jodit formControlName="en_service_text"></ngx-jodit>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Right Side Column -->
+    <div class="col-lg-4 sticky top-0 flex flex-col min-h-dvh">
+      <!-- Meta (AR) -->
+      <p-card styleClass="mb-3" header="Meta ( AR )">
+        <div class="col-12 mt-0">
+          <div class="p-field mb-3">
+            <input #ar_meta_title type="text" pInputText formControlName="ar_meta_title"
+              placeholder="Add Service Meta (AR) Title" class="p-inputtext-lg" dir="rtl" />
+            <div class="flex justify-end items-center mt-1">
+              <small [ngClass]="{'p-error': ar_meta_title.value.length > 80}" class="title-length-info">
+                {{ ar_meta_title.value.length }}/80
+              </small>
+            </div>
+          </div>
+          <div class="p-field">
+            <textarea #ar_meta_text rows="4" cols="30" dir="rtl" pInputTextarea class="p-inputtext-lg w-full"
+              placeholder="Add Service Meta (AR) Description" formControlName="ar_meta_text"></textarea>
+            <div class="flex justify-end items-center mt-1">
+              <small [ngClass]="{'p-error': ar_meta_text.value.length > 160}" class="title-length-info">
+                {{ ar_meta_text.value.length }}/160
+              </small>
+            </div>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Meta (EN) -->
+      <p-card styleClass="mb-3" header="Meta ( EN )">
+        <div class="col-12 mt-0">
+          <div class="p-field mb-3">
+            <input #en_meta_title type="text" pInputText formControlName="en_meta_title"
+              placeholder="Add Service Meta (EN) Title" class="p-inputtext-lg" />
+            <div class="flex justify-end items-center mt-1">
+              <small [ngClass]="{'p-error': en_meta_title.value.length > 80}" class="title-length-info">
+                {{ en_meta_title.value.length }}/80
+              </small>
+            </div>
+          </div>
+          <div class="p-field">
+            <textarea #en_meta_text rows="4" cols="30" pInputTextarea class="p-inputtext-lg w-full"
+              placeholder="Add Service Meta (EN) Description" formControlName="en_meta_text"></textarea>
+            <div class="flex justify-end items-center mt-1">
+              <small [ngClass]="{'p-error': en_meta_text.value.length > 160}" class="title-length-info">
+                {{ en_meta_text.value.length }}/160
+              </small>
+            </div>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Status and Action -->
+      <p-card header="Settings & Status" styleClass="mb-3">
+        <div class="flex flex-column gap-3 mb-4">
+          <!-- Active Status Switch -->
+          <div class="flex items-center justify-between gap-3">
+            <label for="active_status" class="font-medium text-gray-700">Active Status</label>
+            <p-inputSwitch formControlName="active_status" [trueValue]="1" [falseValue]="0"></p-inputSwitch>
+          </div>
+
+          <!-- Home Status Switch -->
+          <div class="flex items-center justify-between gap-3">
+            <label for="home_status" class="font-medium text-gray-700">Show on Home Page</label>
+            <p-inputSwitch formControlName="home_status" [trueValue]="1" [falseValue]="0"></p-inputSwitch>
+          </div>
+        </div>
+
+        <p-footer>
+          <div class="flex justify-content-end gap-3">
+            <button (click)="onCancel()" pButton type="button" icon="pi pi-times" label="Cancel"
+              class="p-button-outlined p-button-danger"></button>
+            <button [disabled]="addServicesForm.invalid" pButton type="submit" class="btn-main bg-main px-4"
+              [label]="isEditing ? 'Update' : 'Publish'"></button>
+          </div>
+        </p-footer>
+      </p-card>
+    </div>
+  </div>
+</form>
+<p-toast />

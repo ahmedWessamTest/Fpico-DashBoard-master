@@ -1,0 +1,269 @@
+@if (whyUsSections) {
+<div class="grid">
+  <div class="col-12">
+    <div class="card px-6 py-6">
+      <p-toast></p-toast>
+      <button
+        pButton
+        pRipple
+        label="Add Section"
+        icon="pi pi-plus"
+        class="btn-main col-4"
+        style="margin-bottom: 10px; padding-block: 16px !important"
+        (click)="openAddSectionDialog()"
+      ></button>
+
+      <p-table
+        #dt
+        [value]="whyUsSections"
+        responsiveLayout="scroll"
+        [rows]="100"
+        [globalFilterFields]="[
+          'en_why_us_title',
+          'ar_why_us_title',
+          'en_why_us_text',
+          'ar_why_us_text'
+        ]"
+        [rowsPerPageOptions]="[100, 500, 1000]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Displaying {first} to {last} of {totalRecords} records"
+        selectionMode="multiple"
+        [rowHover]="true"
+        dataKey="id"
+      >
+        <ng-template pTemplate="caption">
+          <div
+            class="flex md:flex-row md:justify-content-between md:align-items-center"
+          >
+            <h5 class="m-0">Why Us Section Control</h5>
+            <span class="block mt-2 md:mt-0 p-input-icon-right">
+              <i class="pi pi-search"></i>
+              <input
+                #globalFilter
+                pInputText
+                type="text"
+                placeholder="Search..."
+                class="w-full sm:w-auto"
+                (input)="dt.filterGlobal(globalFilter.value, 'contains')"
+              />
+            </span>
+          </div>
+        </ng-template>
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th class="col-1 text-center">ID</th>
+            <th class="col-3">English Title</th>
+            <th class="col-3">Arabic Title</th>
+            <th class="col-2">Status</th>
+            <th class="col-2">Created At</th>
+            <th class="col-1">Actions</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-section>
+          <tr>
+            <td class="col-1 text-center">{{ section.id }}</td>
+            <td class="col-3">{{ section.en_why_us_title }}</td>
+            <td class="col-3">{{ section.ar_why_us_title }}</td>
+            <td class="col-2">
+              <p-inputSwitch
+                [(ngModel)]="section.active_status"
+                [trueValue]="1"
+                [falseValue]="0"
+                (onChange)="toggleStatus(section)"
+              />
+            </td>
+            <td class="col-2">{{ section.created_at | date : "dd-MM-yy" }}</td>
+            <td class="col-1">
+              <div class="flex justify-content-center gap-2">
+                <button
+                  pButton
+                  pRipple
+                  icon="pi pi-pencil"
+                  class="p-button-rounded p-button-success mr-2"
+                  (click)="openEditSectionDialog(section)"
+                ></button>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" style="height: 50vh">
+              <app-no-data-found-banner />
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+    <!-- Add / Edit Section Dialog -->
+    <p-dialog
+      [(visible)]="sectionDialog"
+      [style]="{ width: '450px' }"
+      header="Section Details"
+      [modal]="true"
+      class="p-fluid"
+      [draggable]="false"
+    >
+      <ng-template pTemplate="content">
+        <div class="field">
+          <label for="en_why_us_title">English Title</label>
+          <input
+            type="text"
+            pInputText
+            id="en_why_us_title"
+            [(ngModel)]="selectedSection.en_why_us_title"
+            required
+            autofocus
+            [ngClass]="{
+              'ng-invalid ng-dirty':
+                submitted && !selectedSection.en_why_us_title
+            }"
+          />
+          <small
+            *ngIf="submitted && !selectedSection.en_why_us_title"
+            class="p-error"
+            >Required.</small
+          >
+        </div>
+
+        <div class="field">
+          <label for="ar_why_us_title">Arabic Title</label>
+          <input
+            type="text"
+            pInputText
+            id="ar_why_us_title"
+            [(ngModel)]="selectedSection.ar_why_us_title"
+            required
+            [ngClass]="{
+              'ng-invalid ng-dirty':
+                submitted && !selectedSection.ar_why_us_title
+            }"
+          />
+          <small
+            *ngIf="submitted && !selectedSection.ar_why_us_title"
+            class="p-error"
+            >Required.</small
+          >
+        </div>
+
+        <div class="field">
+          <label for="en_why_us_text">English Text</label>
+          <input
+            type="text"
+            pInputText
+            id="en_why_us_text"
+            required
+            [(ngModel)]="selectedSection.en_why_us_text"
+            required
+          />
+          <small
+            *ngIf="submitted && !selectedSection.en_why_us_text"
+            class="p-error"
+            >Required.</small
+          >
+        </div>
+
+        <div class="field">
+          <label for="ar_why_us_text">Arabic Text</label>
+          <input
+            type="text"
+            pInputText
+            required
+            id="ar_why_us_text"
+            [(ngModel)]="selectedSection.ar_why_us_text"
+            required
+          />
+          <small
+            *ngIf="submitted && !selectedSection.ar_why_us_text"
+            class="p-error"
+            >Required.</small
+          >
+        </div>
+
+        <!-- <div class="field">
+          <label for="ar_why_us_text">Number</label>
+          <input
+            type="text"
+            pInputText
+            required
+            id="why_us_number"
+            [(ngModel)]="selectedSection.why_us_number"
+            required
+          />
+          <small
+            *ngIf="submitted && !selectedSection.why_us_number"
+            class="p-error"
+            >Required.</small
+          >
+        </div> -->
+      </ng-template>
+
+      <ng-template pTemplate="footer">
+        <button
+          pButton
+          pRipple
+          label="Cancel"
+          icon="pi pi-times"
+          class="p-button-text mt-4"
+          (click)="hideDialog()"
+        ></button>
+        <button
+          pButton
+          pRipple
+          label="Save"
+          icon="pi pi-check"
+          class="p-button-text mt-4"
+          (click)="saveSection()"
+        ></button>
+      </ng-template>
+    </p-dialog>
+
+    <!-- Delete Confirmation Dialog -->
+    <p-dialog
+      [(visible)]="deleteSectionDialog"
+      [style]="{ width: '450px' }"
+      header="Confirm Deletion"
+      [modal]="true"
+      class="p-fluid"
+      [draggable]="false"
+    >
+      <ng-template pTemplate="content">
+        <div class="confirmation-content">
+          <i
+            class="pi pi-exclamation-triangle mx-3 align-middle"
+            style="font-size: 2rem"
+          ></i>
+          <span class="align-middle"
+            >Are you sure you want to delete this section?</span
+          >
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="footer">
+        <button
+          pButton
+          pRipple
+          label="Cancel"
+          icon="pi pi-times"
+          class="p-button-text"
+          (click)="deleteSectionDialog = false"
+        ></button>
+        <button
+          pButton
+          pRipple
+          label="Delete"
+          icon="pi pi-check"
+          class="p-button-danger"
+          (click)="confirmDeleteSection()"
+        ></button>
+      </ng-template>
+    </p-dialog>
+  </div>
+</div>
+} @else {
+<app-loading-data-banner />
+}

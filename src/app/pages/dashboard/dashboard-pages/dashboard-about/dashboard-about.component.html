@@ -1,0 +1,248 @@
+@if (aboutUsContent) {
+<div class="container">
+  <h1>English Content</h1>
+  <div class="bg-gray-900 rounded">
+    <!-- English -->
+    <div class="grid md:grid-cols-3">
+      <div>
+        <div class="p-5 text-white">
+          <!-- en_stand_for_title -->
+          <div *ngIf="isEditing">
+            <input
+              type="text"
+              class="form-control my-3"
+              [(ngModel)]="aboutUsContent.rows.en_stand_for_title"
+            />
+          </div>
+          <div *ngIf="!isEditing">
+            <div class="!text-base">
+              <h1 class="text-lg">
+                {{ aboutUsContent.rows.en_stand_for_title }}
+              </h1>
+            </div>
+          </div>
+          <!-- en_stand_for_text -->
+          <div *ngIf="isEditing">
+            <textarea
+              type="text"
+              class="form-control my-3"
+              rows="5"
+              [(ngModel)]="aboutUsContent.rows.en_stand_for_text"
+            ></textarea>
+          </div>
+          <div *ngIf="!isEditing">
+            <div class="!text-base">
+              <h1 class="!text-sm text-gray-500">
+                {{ aboutUsContent.rows.en_stand_for_text }}
+              </h1>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="p-5 text-white">
+          <!-- en_mission_title -->
+          <div *ngIf="isEditing">
+            <input
+              type="text"
+              class="form-control my-3"
+              [(ngModel)]="aboutUsContent.rows.en_mission_title"
+            />
+          </div>
+          <div *ngIf="!isEditing">
+            <div class="!text-base">
+              <h1 class="text-lg">
+                {{ aboutUsContent.rows.en_mission_title }}
+              </h1>
+            </div>
+          </div>
+          <!-- en_mission_text -->
+          <div *ngIf="isEditing">
+            <textarea
+              type="text"
+              class="form-control my-3"
+              rows="5"
+              [(ngModel)]="aboutUsContent.rows.en_mission_text"
+            ></textarea>
+          </div>
+          <div *ngIf="!isEditing">
+            <div class="!text-base">
+              <h1 class="!text-sm text-gray-500">
+                {{ aboutUsContent.rows.en_mission_text }}
+              </h1>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="p-5 text-white">
+          <!-- en_vision_title -->
+          <div *ngIf="isEditing">
+            <input
+              type="text"
+              class="form-control my-3"
+              [(ngModel)]="aboutUsContent.rows.en_vision_title"
+            />
+          </div>
+          <div *ngIf="!isEditing">
+            <div class="!text-base">
+              <h1 class="text-lg">
+                {{ aboutUsContent.rows.en_vision_title }}
+              </h1>
+            </div>
+          </div>
+          <!-- en_vision_text -->
+          <div *ngIf="isEditing">
+            <textarea
+              type="text"
+              class="form-control my-3"
+              rows="5"
+              [(ngModel)]="aboutUsContent.rows.en_vision_text"
+            ></textarea>
+          </div>
+          <div *ngIf="!isEditing">
+            <div class="!text-base">
+              <h1 class="!text-sm text-gray-500">
+                {{ aboutUsContent.rows.en_vision_text }}
+              </h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <h1>Arabic Content</h1>
+  <div class="bg-gray-900 rounded">
+    <!-- Arabic -->
+    <div class="grid md:grid-cols-3 !text-end">
+      <div>
+        <div class="p-5 text-white">
+          <!-- ar_stand_for_title -->
+          <div *ngIf="isEditing">
+            <input
+              type="text"
+              class="form-control my-3 !text-end"
+              [(ngModel)]="aboutUsContent.rows.ar_stand_for_title"
+            />
+          </div>
+          <div *ngIf="!isEditing">
+            <div class="!text-base">
+              <h1 class="text-lg">
+                {{ aboutUsContent.rows.ar_stand_for_title }}
+              </h1>
+            </div>
+          </div>
+          <!-- ar_stand_for_text -->
+          <div *ngIf="isEditing">
+            <textarea
+              type="text"
+              class="form-control my-3 !text-end"
+              rows="5"
+              [(ngModel)]="aboutUsContent.rows.ar_stand_for_text"
+            ></textarea>
+          </div>
+          <div *ngIf="!isEditing">
+            <div class="!text-base">
+              <h1 class="!text-sm text-gray-500">
+                {{ aboutUsContent.rows.ar_stand_for_text }}
+              </h1>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="p-5 text-white">
+          <!-- ar_mission_title -->
+          <div *ngIf="isEditing">
+            <input
+              type="text"
+              class="form-control my-3 !text-end"
+              [(ngModel)]="aboutUsContent.rows.ar_mission_title"
+            />
+          </div>
+          <div *ngIf="!isEditing">
+            <div class="!text-base">
+              <h1 class="text-lg">
+                {{ aboutUsContent.rows.ar_mission_title }}
+              </h1>
+            </div>
+          </div>
+          <!-- ar_mission_text -->
+          <div *ngIf="isEditing">
+            <textarea
+              type="text"
+              class="form-control my-3 !text-end"
+              rows="5"
+              [(ngModel)]="aboutUsContent.rows.ar_mission_text"
+            ></textarea>
+          </div>
+          <div *ngIf="!isEditing">
+            <div class="!text-base">
+              <h1 class="!text-sm text-gray-500">
+                {{ aboutUsContent.rows.ar_mission_text }}
+              </h1>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="p-5 text-white">
+          <!-- ar_vision_title -->
+          <div *ngIf="isEditing">
+            <input
+              type="text"
+              class="form-control my-3 !text-end"
+              [(ngModel)]="aboutUsContent.rows.ar_vision_title"
+            />
+          </div>
+          <div *ngIf="!isEditing">
+            <div class="!text-base">
+              <h1 class="text-lg">
+                {{ aboutUsContent.rows.ar_vision_title }}
+              </h1>
+            </div>
+          </div>
+          <!-- ar_vision_text -->
+          <div *ngIf="isEditing">
+            <textarea
+              type="text"
+              class="form-control my-3 !text-end"
+              rows="5"
+              [(ngModel)]="aboutUsContent.rows.ar_vision_text"
+            ></textarea>
+          </div>
+          <div *ngIf="!isEditing">
+            <div class="!text-base">
+              <h1 class="!text-sm text-gray-500">
+                {{ aboutUsContent.rows.ar_vision_text }}
+              </h1>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="d-flex mt-4 gap-3 align-items-center">
+    <!-- Buttons -->
+    <button
+      *ngIf="!isEditing"
+      pButton
+      [ngClass]="'btn-main text-white p-3 rounded'"
+      label="Edit"
+      icon="pi pi-pencil"
+      (click)="toggleEditing()"
+    ></button>
+    <button
+      *ngIf="isEditing"
+      pButton
+      [ngClass]="'btn-main text-white p-3 rounded'"
+      label="Save Changes"
+      icon="pi pi-save"
+      (click)="saveChanges()"
+    ></button>
+  </div>
+  <p-toast />
+</div>
+
+}

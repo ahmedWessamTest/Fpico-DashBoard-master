@@ -1,0 +1,197 @@
+<form [formGroup]="addBlogsForm" (ngSubmit)="approveBlog()">
+  <div class="row g-3 items-start">
+    <div class="col-lg-8">
+      <p-card [header]="isEditing ? 'Edit Blog' : ' Add New Blog'" styleClass="mb-3 image-card">
+        <!-- Image Upload Section -->
+        <div class="col-12">
+          <div class="p-field">
+            <p-fileUpload #fileUpload name="post_image" accept="image/*" [auto]="true" [chooseLabel]="'Choose Image'"
+              [uploadLabel]="'Upload'" [styleClass]="'w-full'" [cancelLabel]="'Cancel'" [showUploadButton]="true"
+              [showCancelButton]="true" [customUpload]="true" (onSelect)="onFileSelect($event)" [draggable]="true">
+              <ng-template pTemplate="content">
+                <div
+                  class="upload-area flex flex-col items-center justify-center border-2 border-dashed border-gray-300 rounded-lg p-6 hover:border-blue-500 transition">
+                  <i class="pi pi-cloud-upload text-4xl text-gray-400"></i>
+                  <p class="text-gray-500 mt-2">
+                    Drag & drop an image or
+                    <span class="text-blue-500 cursor-pointer" (click)="fileUpload.choose()">click to select</span>
+                  </p>
+                </div>
+              </ng-template>
+            </p-fileUpload>
+          </div>
+        </div>
+      </p-card>
+
+      <p-card header="(AR) Blog Content" styleClass="p-2 mb-3">
+        <div class="p-field mb-3">
+          <input type="text" pInputText formControlName="ar_blog_title" placeholder="(AR) Blog Title"
+            class="p-inputtext-lg" dir="rtl" />
+        </div>
+        <!-- (AR) Content Editor with Warnings -->
+        <div class="col-12 mt-0">
+          <div class="p-field">
+            <ngx-jodit formControlName="ar_blog_text" dir="rtl" [options]="options_AR" #ngxJoditAR></ngx-jodit>
+
+          </div>
+        </div>
+      </p-card>
+      <p-card header="(EN) Blog Content" styleClass="p-2 mb-3">
+        <!-- (EN) Content Editor with Warnings -->
+        <div class="col-12 mt-0">
+          <div class="p-field mb-3">
+            <input type="text" pInputText formControlName="en_blog_title" placeholder="(EN) Blog Title"
+              class="p-inputtext-lg" />
+          </div>
+          <div class="p-field">
+            <ngx-jodit formControlName="en_blog_text" [options]="options_EN" #ngxJoditEn></ngx-jodit>
+
+          </div>
+        </div>
+      </p-card>
+
+      <!-- en_script_text -->
+      <p-card header="(EN) script text" styleClass="p-2 mb-3">
+        <!-- (EN) Content Editor with Warnings -->
+        <div class="col-12 mt-0">
+          <div class="p-field mb-3">
+            <textarea variant="filled" class="w-full" rows="5" cols="30" pInputTextarea formControlName="en_script_text"
+              placeholder="add en_script_text">
+            </textarea>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- ar_script_text -->
+      <p-card header="(AR) script text" styleClass="p-2 mb-3">
+        <!-- (EN) Content Editor with Warnings -->
+        <div class="col-12 mt-0">
+          <div class="p-field mb-3">
+            <textarea variant="filled" class="w-full" rows="5" cols="30" pInputTextarea formControlName="ar_script_text"
+              placeholder="add (EN) script text">
+            </textarea>
+          </div>
+        </div>
+      </p-card>
+    </div>
+
+    <div class="col-lg-4 sticky top-0 flex flex-col min-h-dvh">
+      <p-card header="Date" styleClass="mb-4">
+        <!-- Date Input -->
+        <div class="mt-0">
+          <div class="position-relative">
+            <p-calendar formControlName="blog_date" [dateFormat]="'yy-mm-dd'" [showIcon]="true"
+              styleClass="w-full ms-3"></p-calendar>
+          </div>
+        </div>
+      </p-card>
+
+      <p-card styleClass="flex-grow-1 mb-3" header="Meta ( AR )" [style]="{ width: 'width' }">
+        <!-- AR Title Input -->
+        <div class="col-12 mt-0">
+          <div class="p-field">
+            <input #ar_meta_title type="text" pInputText formControlName="ar_meta_title"
+              placeholder="Add Blog Meta (AR) Title" class="p-inputtext-lg" dir="rtl" />
+            <!-- Title length indicator -->
+            <div class="flex justify-end items-center">
+              <small [ngClass]="{
+                  'p-error': ar_meta_title.value.length > 80
+                }" class="title-length-info">
+                {{ ar_meta_title.value.length }}/80
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- AR Text Input -->
+        <div class="col-12 mt-0">
+          <div class="p-field">
+            <textarea #ar_meta_text rows="4" cols="30" dir="rtl" dir="rtl" pInputTextarea class="p-inputtext-lg w-full"
+              placeholder="Add Blog Meta (AR) Description" formControlName="ar_meta_text">
+            </textarea>
+
+            <!-- Title length indicator -->
+            <div class="flex justify-end items-center">
+              <small [ngClass]="{
+                  'p-error': ar_meta_text.value.length > 160
+                }" class="title-length-info">
+                {{ ar_meta_text.value.length }}/160
+              </small>
+            </div>
+          </div>
+        </div>
+      </p-card>
+      <p-card styleClass="flex-grow-1 " header="Meta ( EN )" [style]="{ width: 'width' }">
+        <!-- EN Title Input -->
+        <div class="col-12 mt-0">
+          <div class="p-field">
+            <input #en_meta_title type="text" pInputText formControlName="en_meta_title"
+              placeholder="Add Blog Meta (EN) Title" class="p-inputtext-lg" />
+            <!-- Title length indicator -->
+            <div class="flex justify-end items-center">
+              <small [ngClass]="{
+                  'p-error': en_meta_title.value.length > 80
+                }" class="title-length-info">
+                {{ en_meta_title.value.length }}/80
+              </small>
+            </div>
+          </div>
+        </div>
+        <!-- EN Text Input -->
+        <div class="col-12 mt-0">
+          <div class="p-field">
+            <textarea #en_meta_text rows="4" cols="30" pInputTextarea class="p-inputtext-lg w-full"
+              placeholder="Add Blog Meta (EN) Description" formControlName="en_meta_text">
+            </textarea>
+            <!-- Title length indicator -->
+            <div class="flex justify-end items-center">
+              <small [ngClass]="{
+                  'p-error': en_meta_text.value.length > 160
+                }" class="title-length-info">
+                {{ en_meta_text.value.length }}/160
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <p-footer>
+          <!-- Submit Button -->
+          <div class="p-md-6 flex justify-between flex-wrap gap-3 items-center">
+            <div class="flex justify-content-center gap-2">
+              <!-- Switch Input to Publish/Archive -->
+              <label for="active_status">Publish Status</label>
+              <p-inputSwitch formControlName="active_status" [trueValue]="1" [falseValue]="0"></p-inputSwitch>
+            </div>
+            <div class="flex justify-end gap-3 items-center">
+              <div class="p-field">
+                <button (click)="onCancelBlogClick()" pButton type="button" icon="pi pi-times" label="Cancel"
+                  class="p-button-outlined p-button-danger"></button>
+              </div>
+              <div class="p-field">
+                <button [disabled]="addBlogsForm.invalid" pButton type="submit" class="btn-main bg-main px-4"
+                  label="Submit"></button>
+              </div>
+            </div>
+          </div>
+        </p-footer>
+      </p-card>
+    </div>
+  </div>
+</form>
+
+<!-- Confirmation Dialog for Approve -->
+<ng-container *ngIf="currentBlog">
+  <p-dialog [draggable]="false" [(visible)]="approveDialogVisible" header="Confirm" [modal]="true"
+    [style]="{ maxwidth: '90vw' }">
+    <div>
+      <span>Are your sure you want to Accept This Blog?</span>
+    </div>
+    <ng-template pTemplate="footer">
+      <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text"
+        (click)="approveDialogVisible = false"></button>
+      <button pButton pRipple label="Accept" icon="pi pi-check" class="p-button-text"
+        (click)="onSubmit(); approveDialogVisible = false; fileUpload.clear()"></button>
+    </ng-template>
+  </p-dialog>
+</ng-container>
+<p-toast />

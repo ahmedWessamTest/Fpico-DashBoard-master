@@ -1,0 +1,82 @@
+/* You can add global styles to this file, and also import other style files */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import "base";
+@import "forms";
+@import "typography";
+@import "variables";
+@import "utilities";
+@import "buttons";
+
+$gutter: 1rem; //for primeflex grid system
+@import "assets/layout/styles/layout/layout.scss";
+
+// import Quill styles in styles.scss
+@import "../node_modules/quill/dist/quill.core.css";
+@import "../node_modules/quill/dist/quill.snow.css";
+
+@import "../node_modules/intl-tel-input/build/css/intlTelInput.css";
+@import "../node_modules/ngx-sharebuttons/themes/default.scss";
+
+input,
+textarea {
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  padding: 10px 20px;
+  border-radius: 10px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.jodit-toolbar__box {
+  position: sticky;
+  top: -20px;
+  z-index: 100;
+}
+
+.jodit-wysiwyg {
+  min-height: 250px !important;
+}
+
+.p-element.btn-main.col-4.p-button.p-component {
+  background-color: #e7bf88 !important;
+}
+
+.p-inputswitch.p-inputswitch-checked .p-inputswitch-slider {
+  background-color: #e7bf88 !important;
+}
+
+.p-element.p-button-text.p-button.p-component.ng-star-inserted {
+  margin-inline: 10px;
+}
+
+td {
+  white-space: nowrap;
+  /* Prevent text wrapping */
+  overflow: hidden;
+  /* Hide overflow */
+  text-overflow: ellipsis;
+  /* Show '...' when text is too long */
+  max-width: 250px;
+  /* Adjust max width as needed */
+}
+
+.layout-menu ul a.active-route,
+.layout-menu ul a:focus {
+  color: #e7bf88 !important;
+  box-shadow: 0 0 0 0.2rem #fae9d2;
+}
+
+@theme {
+  --color-main: #e7bf88 !important;
+}
+
+html {
+  font-size: 12px !important;
+}
+
+input {
+  color: black !important;
+}

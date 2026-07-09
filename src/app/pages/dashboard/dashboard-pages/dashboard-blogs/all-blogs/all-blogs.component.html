@@ -1,0 +1,145 @@
+@if (blogs) {
+<div class="grid">
+  <div class="col-12">
+    <div class="card px-6 py-6">
+      <p-toast></p-toast>
+
+      <p-table
+        #dt
+        [value]="blogs"
+        responsiveLayout="scroll"
+        [rows]="10"
+        [totalRecords]="allBlogs.Blogs.total"
+        [lazy]="true"
+        [globalFilterFields]="['en_blog_title', 'id', 'blog_date', 'id']"
+        [paginator]="true"
+        (onPage)="onPageChange($event)"
+        [rowsPerPageOptions]="getPagination()"
+        [showCurrentPageReport]="true"
+        [(selection)]="selectedBlogs"
+        selectionMode="multiple"
+        [loading]="loading"
+        [rowHover]="true"
+        dataKey="id"
+      >
+        <ng-template pTemplate="caption">
+          <div class="flex"></div>
+        </ng-template>
+        <ng-template pTemplate="caption">
+          <div
+            class="flex md:flex-row md:justify-content-between md:align-items-center"
+          >
+            <h5 class="m-0">Posts Edit</h5>
+            <span class="block mt-2 md:mt-0 p-input-icon-right">
+              <i class="pi pi-search"></i>
+              <input
+                pInputText
+                type="text"
+                (input)="onGlobalFilter(dt, $event)"
+                placeholder="search..."
+                class="w-full sm:w-auto"
+              />
+            </span>
+          </div>
+        </ng-template>
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th pSortableColumn="id" class="text-center">
+              Id <p-sortIcon field="id"></p-sortIcon>
+            </th>
+            <th class="text-center">Title (AR)</th>
+            <th class="text-center" pSortableColumn="blog_date">
+              Date<p-sortIcon field="blog_date"></p-sortIcon>
+            </th>
+            <th class="text-center">Edit</th>
+            <th class="text-center">View</th>
+            <th pSortableColumn="active_status" class="text-center">
+              Status <p-sortIcon field="active_status"></p-sortIcon>
+            </th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-blog>
+          <tr>
+            <td class="col-1 text-center">
+              <span class="p-column-title">Id</span>
+              {{ blog.id }}
+            </td>
+            <td
+              class="col-4"
+              style="
+                max-width: 250px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+              "
+              pTooltip="{{ blog.ar_blog_title }}"
+              tooltipPosition="top"
+            >
+              <span class="p-column-title">Title</span>
+              {{ blog.ar_blog_title }}
+            </td>
+
+            <td class="col-2">
+              <span class="p-column-title">Date</span>
+              {{ blog.blog_date | date : "medium" }}
+            </td>
+            <td class="col-1">
+              <div class="flex justify-content-center gap-2">
+                <!-- Edit Button -->
+                <button
+                  pButton
+                  pRipple
+                  icon="pi pi-pencil"
+                  class="p-button-rounded p-button-success"
+                  [routerLink]="['/dashboard/blogs/blogs-edit', blog.id]"
+                ></button>
+              </div>
+            </td>
+            <td class="col-1">
+              <div class="flex justify-content-center gap-2">
+                <!-- Edit Button -->
+                <!-- <button
+                  pButton
+                  pRipple
+                  icon="pi pi-search"
+                  [label]="'view (EN)'"
+                  (click)="viewBlog(blog.en_slug)"
+                  class="p-button-rounded p-button-success"></button> -->
+                <button
+                  pButton
+                  pRipple
+                  icon="pi pi-search"
+                  [label]="'view (AR)'"
+                  (click)="viewBlog(blog.ar_slug)"
+                  class="p-button-rounded p-button-success"
+                ></button>
+              </div>
+            </td>
+            <td class="col-1">
+              <div class="flex justify-content-center gap-2">
+                <!-- Switch Input to Publish/Archive -->
+                <p-inputSwitch
+                  [(ngModel)]="blog.active_status"
+                  [trueValue]="1"
+                  [falseValue]="0"
+                  (onChange)="toggleBlogStatus(blog)"
+                ></p-inputSwitch>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" style="height: 50vh">
+              <app-no-data-found-banner></app-no-data-found-banner>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</div>
+} @else {
+<app-loading-data-banner></app-loading-data-banner>
+}

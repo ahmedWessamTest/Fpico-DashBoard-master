@@ -1,0 +1,93 @@
+<div class="min-h-dvh flex justify-center items-center">
+  <app-dashboard-top-bar [isShow]="false"></app-dashboard-top-bar>
+
+  <main class="dashboard">
+    <!-- login -->
+    <div class="flex align-items-start py-5 justify-content-center min-w-screen overflow-hidden">
+      <div class="flex flex-column align-items-center justify-content-center py-5">
+        <div
+          style="
+            border-radius: 56px;
+            padding: 0.3rem;
+            background: linear-gradient(180deg, #314b98 10%, rgba(33, 150, 243, 0) 30%);
+          ">
+          <div class="shadow-inner w-full surface-card py-8 px-5 sm:px-8 box-shadow" style="border-radius: 53px">
+            <div class="text-center mb-2">
+              <img class="mx-auto mb-9" src="./assets/images/favicon.svg" alt="Image" />
+            </div>
+
+            <form [formGroup]="userData" (ngSubmit)="onSignInFormSubmitClick()">
+              <!-- Email Field -->
+              <div>
+                <label for="email1" class="block text-900 text-xl font-medium mb-2">User Name</label>
+                <input
+                  id="email1"
+                  type="name"
+                  placeholder="User Name"
+                  pInputText
+                  class="w-full md:w-30rem mb-1"
+                  style="padding: 1rem"
+                  formControlName="email" />
+                <!-- Email Error Message -->
+                @if (userData.controls['email'].invalid && userData.controls['email'].touched) {
+                <div class="text-red-500 mb-5">
+                  @if (userData.controls['email'].hasError('required')) {
+                  <small>required</small>
+                  }
+                </div>
+                }
+
+                <!-- Password Field -->
+                <label for="password1" class="block text-900 font-medium text-xl mb-2">Password</label>
+                <p-password
+                  id="password1"
+                  placeholder="Password"
+                  styleClass="mb-1"
+                  inputStyleClass="w-full p-3 md:w-30rem"
+                  formControlName="password"
+                  [feedback]="false"></p-password>
+                <!-- Password Error Message -->
+                @if (userData.controls['password'].invalid && userData.controls['password'].touched) {
+                <div class="text-red-500 mb-5">
+                  @if (userData.controls['password'].hasError('required')) {
+                  <small>required</small>
+                  }
+                </div>
+                }
+
+                <!-- Remember Me Checkbox -->
+                <div class="flex items-center justify-between mb-5 mt-2 gap-5">
+                  <div class="flex items-center">
+                    <p-checkbox
+                      id="rememberme1"
+                      [binary]="true"
+                      styleClass="mx-2 border rounded"
+                      formControlName="rememberMe"></p-checkbox>
+                    <label for="rememberme1">Remember me</label>
+                  </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button
+                  pButton
+                  pRipple
+                  [icon]="isLoading ? 'pi pi-spin pi-spinner' : ''"
+                  [iconPos]="'right'"
+                  label="Login"
+                  class="w-full p-3 py-3 text-xl btn-main"
+                  [disabled]="userData.invalid || isLoading"></button>
+                @if (isErrorMessage) {
+                <div class="text-red-500 my-2 text-center">
+                  <small>wrong user name or password !</small>
+                </div>
+                }
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<app-dashboard-footer />

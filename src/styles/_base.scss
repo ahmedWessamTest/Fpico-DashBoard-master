@@ -1,0 +1,60 @@
+@import "variables";
+
+.btn-large a {
+  padding-inline: 50px !important;
+}
+
+img {
+  object-position: top;
+}
+
+.lightBox {
+  display: flex;
+  animation: lightBox_hide 0.1s 2s forwards;
+}
+
+@keyframes lightBox_hide {
+  0% {
+    display: flex;
+  }
+  100% {
+    display: none;
+  }
+}
+
+.pi {
+  margin-inline: 0.5rem !important;
+}
+
+.p-toast-message-content {
+  align-items: start;
+  .p-element.p-icon-wrapper {
+    align-items: start;
+    margin-left: 0.5rem;
+  }
+}
+
+.hyper_link {
+  text-decoration: none !important;
+}
+
+.toast-top-left {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 9999; /* Ensure it appears above other content */
+}
+
+.vh-90 {
+  height: 90vh !important;
+}
+
+th .p-sortable-column-icon {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  justify-content: center;
+}
+
+body {
+  overflow-y: hidden;
+}

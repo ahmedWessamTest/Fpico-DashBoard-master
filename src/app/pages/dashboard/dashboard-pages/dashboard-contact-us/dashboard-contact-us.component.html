@@ -1,0 +1,125 @@
+@if (emails) {
+<p-card header="Recent Message" class="contact-card">
+  <!-- Search Input for Global Filter -->
+  <div class="p-input-icon-right search-bar">
+    <i class="pi pi-search"></i>
+    <input
+      pInputText
+      type="text"
+      (input)="onGlobalFilter(table, $event)"
+      placeholder="search by name or id..."
+    />
+  </div>
+
+  <p-table
+    #table
+    [value]="emails"
+    [paginator]="true"
+    [rows]="1000"
+    [responsive]="true"
+    [sortField]="'created_at'"
+    [sortOrder]="-1"
+    [globalFilterFields]="[
+      'id',
+      'full_name',
+      'message',
+      'phone',
+      'service_name',
+      'created_at'
+    ]"
+  >
+    <!-- Table Header -->
+    <ng-template pTemplate="header">
+      <tr>
+        <th class="text-center" pSortableColumn="id">
+          ID <p-sortIcon field="id"></p-sortIcon>
+        </th>
+        <th class="text-center" pSortableColumn="full_name">
+          Name <p-sortIcon field="full_name"></p-sortIcon>
+        </th>
+        <th class="text-center" pSortableColumn="message">
+          Message <p-sortIcon field="message"></p-sortIcon>
+        </th>
+        <th class="text-center" pSortableColumn="service_name">
+          service_name <p-sortIcon field="service_name"></p-sortIcon>
+        </th>
+        <th class="text-center" pSortableColumn="phone">
+          phone <p-sortIcon field="phone"></p-sortIcon>
+        </th>
+        <th class="text-center" pSortableColumn="created_at">
+          Date <p-sortIcon field="created_at"></p-sortIcon>
+        </th>
+        <th class="text-center">View</th>
+      </tr>
+    </ng-template>
+
+    <!-- Table Body -->
+    <ng-template pTemplate="body" let-email>
+      @if (email.message) {
+      <tr>
+        <td class="text-center">{{ email.id }}</td>
+        <td class="text-start">{{ email.full_name }}</td>
+        <td class="text-start">
+          <span pTooltip="{{ email.message }}" [tooltipPosition]="'top'">
+            {{ email.message | slice : 0 : 20
+            }}{{ email.message.length > 20 ? "..." : "" }}
+          </span>
+        </td>
+        <td class="text-center">{{ email.service_name }}</td>
+        <td class="text-center">{{ email.phone }}</td>
+        <td class="text-center">{{ email.created_at }}</td>
+        <td class="text-center">
+          <button
+            pButton
+            label="View"
+            icon="pi pi-search"
+            (click)="showDetails(email)"
+          ></button>
+        </td>
+      </tr>
+      }
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" style="height: 50vh">
+          <app-no-data-found-banner></app-no-data-found-banner>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<!-- Modal for Email Details -->
+<p-dialog
+  [(visible)]="emailDialogVisible"
+  [modal]="true"
+  [style]="{ width: '50vw' }"
+  header="Message Details"
+  [closable]="true"
+  [responsive]="true"
+  [closeOnEscape]="true"
+>
+  @if (selectedEmail) {
+  <div>
+    <h3>Name: {{ selectedEmail.full_name }}</h3>
+    <h5>Email: {{ selectedEmail.email }}</h5>
+    <p><strong>Date:</strong> {{ selectedEmail.created_at }}</p>
+    <p><strong>Phone:</strong> {{ selectedEmail.phone }}</p>
+    <p><strong>Content:</strong></p>
+    <p>{{ selectedEmail.message }}</p>
+    <p-footer>
+      <button
+        pButton
+        label="close"
+        icon="pi pi-times"
+        (click)="emailDialogVisible = false"
+      ></button>
+    </p-footer>
+  </div>
+  }
+</p-dialog>
+
+} @else {
+<app-loading-data-banner></app-loading-data-banner>
+}

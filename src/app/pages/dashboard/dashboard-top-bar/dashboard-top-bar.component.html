@@ -1,0 +1,40 @@
+<div class="layout-topbar flex-row-reverse">
+  <div class="container-fluid flex items-center justify-between">
+    <a class="justify-content-end me-auto py-2" routerLink="">
+      <img src="./assets/images/fipco.png" class="ms-3 w-[100px]" alt="logo" />
+    </a>
+
+    @if (isShow) {
+    <button
+      #topbarmenubutton
+      class="p-link layout-topbar-menu-button layout-topbar-button"
+      (click)="layoutService.showProfileSidebar()"
+    >
+      <i class="pi pi-ellipsis-v"></i>
+    </button>
+    <div
+      #topbarmenu
+      class="layout-topbar-menu"
+      [ngClass]="{
+        'layout-topbar-menu-mobile-active':
+          layoutService.state.profileSidebarVisible
+      }"
+    >
+      <button
+        #menubutton
+        class="p-link layout-menu-button layout-topbar-button"
+        (click)="layoutService.onMenuToggle()"
+      >
+        <i class="pi pi-bars"></i>
+      </button>
+      <button class="p-link layout-topbar-button" routerLink="/dashboard">
+        <i class="pi pi-user"></i>
+        <span>Profile</span>
+      </button>
+      @if (name.length>0) {
+      <span class="d-flex align-items-center">User Name</span>
+      }
+    </div>
+    }
+  </div>
+</div>

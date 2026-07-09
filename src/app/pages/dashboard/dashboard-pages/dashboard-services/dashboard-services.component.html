@@ -1,0 +1,210 @@
+@if (projects) {
+<div class="grid">
+  <div class="col-12">
+    <div class="card px-6 py-6">
+      <p-toast></p-toast>
+
+      <!-- Add Button -->
+      <button
+        pButton
+        pRipple
+        label="Add"
+        icon="pi pi-plus"
+        class="btn-main col-4"
+        style="margin-bottom: 10px; padding-block: 16px !important"
+        routerLink="/dashboard/services/add"
+      ></button>
+
+      <!-- Projects Table -->
+      <p-table
+        #dt
+        [value]="projects"
+        [columns]="cols"
+        responsiveLayout="scroll"
+        [rows]="100"
+        [globalFilterFields]="['en_service_title', 'ar_service_title']"
+        [rowsPerPageOptions]="[100, 500, 1000]"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="display {first} to {last} from {totalRecords} records"
+        selectionMode="multiple"
+        [rowHover]="true"
+        dataKey="id"
+      >
+        <ng-template pTemplate="caption">
+          <div
+            class="flex md:flex-row md:justify-content-between md:align-items-center"
+          >
+            <h5 class="m-0">Organize Services</h5>
+            <span class="block mt-2 md:mt-0 p-input-icon-right">
+              <i class="pi pi-search"></i>
+              <input
+                #globalFilter
+                pInputText
+                type="text"
+                placeholder="search..."
+                class="w-full sm:w-auto"
+                (input)="dt.filterGlobal(globalFilter.value, 'contains')"
+              />
+            </span>
+          </div>
+        </ng-template>
+
+        <!-- Table Header -->
+        <ng-template pTemplate="header">
+          <tr>
+            <th>Image</th>
+            <th>English Title</th>
+            <th>Arabic Title</th>
+            <th>Status</th>
+            <th>Home</th>
+            <th class="text-center">Edit</th>
+            <th class="text-center">Gallery</th>
+          </tr>
+        </ng-template>
+
+        <!-- Table Body -->
+        <ng-template pTemplate="body" let-project>
+          <tr>
+            <td>
+              <img
+                [src]="WEB_SITE_BASE_URL + 'service/' + project.main_image"
+                width="50"
+              />
+            </td>
+            <td>{{ project.en_service_title }}</td>
+            <td>{{ project.ar_service_title }}</td>
+            <td>
+              <p-inputSwitch
+                [(ngModel)]="project.active_status"
+                [trueValue]="1"
+                [falseValue]="0"
+                (onChange)="toggleStatus(project)"
+              />
+            </td>
+            <td>
+              <p-inputSwitch
+                [(ngModel)]="project.home_status"
+                [trueValue]="1"
+                [falseValue]="0"
+                (onChange)="toggleHomeStatus(project)"
+              />
+            </td>
+            <td>
+              <button
+                pButton
+                icon="pi pi-pencil"
+                [routerLink]="['/dashboard/services/edit', project.id]"
+              ></button>
+            </td>
+            <td class="text-center">
+              <button
+                pButton
+                icon="pi pi-images"
+                class="p-button-secondary"
+                (click)="openGalleryDialog(project)"
+              ></button>
+            </td>
+          </tr>
+        </ng-template>
+
+        <!-- No Data Message -->
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="9" style="height: 50vh">
+              <app-no-data-found-banner></app-no-data-found-banner>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+
+
+  </div>
+
+  <p-dialog
+    [(visible)]="galleryDialog"
+    [style]="{ width: '600px' }"
+    header="Manage Project Images"
+    [modal]="true"
+    class="p-fluid"
+    [draggable]="false"
+  >
+    <ng-template pTemplate="content">
+      <div class="field">
+        <div class="flex justify-between items-center">
+          <label class="block">Upload New Image</label>
+          <!-- <div class="text-center">
+            <span
+              [class]="{ 'text-danger': selectedProjectImages.length === 4 }"
+              class="block mb-2"
+              >Maximum 4 Images</span
+            >
+            {{ selectedProjectImages.length }} / 4
+          </div> -->
+        </div>
+        <!-- [disabled]="selectedProjectImages.length" -->
+        <input type="file" (change)="onUploadImage($event)" multiple />
+      </div>
+
+      <div class="field">
+        <h5>
+          <span class="mx-2" style="color: #e7bf88">{{
+            selectedProjectImages.length
+          }}</span>
+          Existing Images
+        </h5>
+        <div *ngIf="selectedProjectImages.length > 0; else noImages">
+          <div
+            *ngFor="let image of selectedProjectImages"
+            class="image-container"
+          >
+            <div class="border-2 p-3 mb-2">
+              <img
+                [src]="WEB_SITE_BASE_URL + 'service/' + image.main_image"
+                width="100"
+              />
+              <div class="my-3">
+                <label class="mb-2 block">Change Image num Status</label>
+                <p-inputSwitch
+                  [(ngModel)]="image.active_status"
+                  [trueValue]="1"
+                  [falseValue]="0"
+                  class="block"
+                  (onChange)="toggleImageStatus(image.id)"
+                />
+              </div>
+              <label class="block">Edit Image</label>
+              <input type="file" (change)="onUpdateImage(image.id, $event)" />
+            </div>
+          </div>
+        </div>
+        <ng-template #noImages>
+          <p>No images found</p>
+        </ng-template>
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+      <button
+        pButton
+        pRipple
+        label="Close"
+        icon="pi pi-times"
+        class="p-button-text"
+        (click)="galleryDialog = false"
+      ></button>
+    </ng-template>
+  </p-dialog>
+</div>
+} @else {
+<app-loading-data-banner></app-loading-data-banner>
+}
+<ngx-spinner
+  name="loaderGallery"
+  bdColor="rgba(0, 0, 0, 0.8)"
+  size="medium"
+  color="#fff"
+  type="square-jelly-box"
+  [fullScreen]="true"
+  ><p style="color: white">Loading...</p></ngx-spinner
+>
