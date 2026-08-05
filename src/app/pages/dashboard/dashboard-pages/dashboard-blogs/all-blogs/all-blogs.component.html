@@ -8,12 +8,13 @@
         #dt
         [value]="blogs"
         responsiveLayout="scroll"
-        [rows]="10"
-        [totalRecords]="allBlogs.Blogs.total"
+        [rows]="rowsPerPage"
+        [totalRecords]="totalRecords"
         [lazy]="true"
-        [globalFilterFields]="['en_blog_title', 'id', 'blog_date', 'id']"
+        [first]="first"
         [paginator]="true"
         (onPage)="onPageChange($event)"
+        (onSort)="onSort($event)"
         [rowsPerPageOptions]="getPagination()"
         [showCurrentPageReport]="true"
         [(selection)]="selectedBlogs"
@@ -22,9 +23,6 @@
         [rowHover]="true"
         dataKey="id"
       >
-        <ng-template pTemplate="caption">
-          <div class="flex"></div>
-        </ng-template>
         <ng-template pTemplate="caption">
           <div
             class="flex md:flex-row md:justify-content-between md:align-items-center"
@@ -35,7 +33,8 @@
               <input
                 pInputText
                 type="text"
-                (input)="onGlobalFilter(dt, $event)"
+                [ngModel]="searchQuery"
+                (input)="onSearchInput($event)"
                 placeholder="search..."
                 class="w-full sm:w-auto"
               />

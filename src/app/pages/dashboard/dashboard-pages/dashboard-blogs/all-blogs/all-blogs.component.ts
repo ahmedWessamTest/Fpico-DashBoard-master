@@ -15,7 +15,7 @@ import { RatingModule } from 'primeng/rating';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'primeng/tooltip';
-import { finalize, timer } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged, finalize, timer } from 'rxjs';
 import {
   BlogsData,
   IGetAllBlogs,
@@ -50,7 +50,7 @@ import { NoDataFoundBannerComponent } from '../../../../../shared/components/no-
   providers: [MessageService],
 })
 export class AllBlogsComponent {
-  blogs!: BlogsData[];
+  blogs: BlogsData[] = [];
 
   allBlogs!: IGetAllBlogs;
 
@@ -68,6 +68,15 @@ export class AllBlogsComponent {
 
   selectedStatus: string = '';
 
+  searchQuery: string = '';
+  private searchSubject = new Subject<string>();
+
+  first: number = 0;
+  totalRecords: number = 0;
+  loading: boolean = false;
+  rowsPerPage = 10;
+  currentPage = 1;
+
   private blogsService = inject(BlogsService);
 
   private messageService = inject(MessageService);
@@ -75,22 +84,53 @@ export class AllBlogsComponent {
   private ngxSpinnerService = inject(NgxSpinnerService);
 
   ngOnInit(): void {
-    this.getBlogsData();
+    this.searchSubject.pipe(
+      debounceTime(400),
+      distinctUntilChanged()
+    ).subscribe(searchValue => {
+      this.searchQuery = searchValue;
+      this.currentPage = 1;
+      this.first = 0;
+      this.loadBlogs(1, this.rowsPerPage, this.searchQuery, false);
+    });
+
+    this.loadBlogs(this.currentPage, this.rowsPerPage, this.searchQuery, true);
   }
 
-  getBlogsData(): void {
-    this.blogsService.getAllBlogs().subscribe({
-      next: (response) => {
-        this.blogs = response.Blogs.data;
+  onSearchInput(event: any): void {
+    const value = event.target.value;
+    this.searchSubject.next(value);
+  }
+
+  loadBlogs(
+    page: number = this.currentPage,
+    perPage: number = this.rowsPerPage,
+    search: string = this.searchQuery,
+    showSpinner: boolean = true
+  ): void {
+    if (showSpinner) {
+      this.ngxSpinnerService.show('square-jelly-box');
+    }
+
+    this.blogsService.getAllBlogs(page, perPage, search).subscribe({
+      next: (response: any) => {
+        this.blogs = response?.Blogs?.data || [];
+        this.totalRecords = response?.Blogs?.total || 0;
         this.allBlogs = response;
+        if (showSpinner) {
+          this.ngxSpinnerService.hide('square-jelly-box');
+        }
       },
       error: (err) => {
+        if (showSpinner) {
+          this.ngxSpinnerService.hide('square-jelly-box');
+        }
         this.messageService.add({
           severity: 'error',
           summary: 'Error',
           detail: 'Error Happen!',
         });
-      },
+      }
     });
   }
 
@@ -103,7 +143,6 @@ export class AllBlogsComponent {
     this.submitted = true;
     if (this.blog.post_title && this.blog.post_content) {
       if (this.blog.id) {
-        // Update existing blog
         this.messages = [
           {
             severity: 'success',
@@ -112,9 +151,7 @@ export class AllBlogsComponent {
             life: 3000,
           },
         ];
-        // Call blogService.updateBlog(this.blog)
       } else {
-        // Create new blog
         this.messages = [
           {
             severity: 'success',
@@ -123,7 +160,6 @@ export class AllBlogsComponent {
             life: 3000,
           },
         ];
-        // Call blogService.createBlog(this.blog)
       }
       this.blogDialog = false;
       this.blog = {} as any;
@@ -133,10 +169,6 @@ export class AllBlogsComponent {
   hideDialog(): void {
     this.blogDialog = false;
     this.submitted = false;
-  }
-
-  onGlobalFilter(dt: any, event: any): void {
-    dt.filterGlobal(event.target.value, 'contains');
   }
 
   toggleBlogStatus(blog: any): void {
@@ -183,29 +215,35 @@ export class AllBlogsComponent {
   }
 
   getPagination(): number[] {
-    return [10, 100, 500, 1000, this.blogs.length].sort((a, b) => a - b);
+    return [10, 50, 100, 500];
   }
-
-  totalRecords: number = 0;
-  loading: boolean = false;
-  rowsPerPage = 10;
-  currentPage = 1;
 
   onPageChange(event: any) {
-    this.currentPage = event.first / event.rows + 1; // Convert to 1-based index
+    this.first = event.first;
     this.rowsPerPage = event.rows;
-    this.loadBlogs(this.currentPage, this.rowsPerPage);
+    this.currentPage = Math.floor(event.first / event.rows) + 1;
+    this.loadBlogs(this.currentPage, this.rowsPerPage, this.searchQuery);
   }
 
-  loadBlogs(page: number, perPage: number) {
-    this.ngxSpinnerService.show('square-jelly-box');
-    console.log(page);
-    this.blogsService.getAllBlogs(page, perPage).subscribe((response: any) => {
-      this.blogs = response.Blogs.data;
-      this.totalRecords = response.Blogs.total;
-      this.allBlogs = response;
-      this.ngxSpinnerService.hide('square-jelly-box');
-    });
+  onSort(event: any) {
+    const field = event.field;
+    const order = event.order; // 1 for ASC, -1 for DESC
+    if (this.blogs && field) {
+      this.blogs.sort((a: any, b: any) => {
+        let val1 = a[field];
+        let val2 = b[field];
+
+        if (val1 == null && val2 != null) return -1 * order;
+        if (val1 != null && val2 == null) return 1 * order;
+        if (val1 == null && val2 == null) return 0;
+
+        if (typeof val1 === 'string' && typeof val2 === 'string') {
+          return val1.localeCompare(val2) * order;
+        }
+
+        return (val1 < val2 ? -1 : val1 > val2 ? 1 : 0) * order;
+      });
+    }
   }
 
   viewBlog(blogId: number) {
@@ -215,3 +253,4 @@ export class AllBlogsComponent {
     );
   }
 }
+

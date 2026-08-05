@@ -6,6 +6,7 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { debounceTime } from 'rxjs';
 // PrimeNG Imports
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -133,16 +134,33 @@ export class BlogsAddComponent {
 
   @ViewChild('fileUpload') fileUpload!: FileUpload;
 
+  isFormInitialized: boolean = false;
+  isSubmittingOrResetting: boolean = false;
+
   ngOnInit(): void {
     this.initForm();
     this.inOpenCheckCurrentBlog();
 
-    this.addBlogsForm.get('ar_blog_text')?.valueChanges.subscribe(() => {
-      this.checkDeletedImages();
+    this.addBlogsForm.get('ar_blog_text')?.valueChanges.pipe(
+      debounceTime(500)
+    ).subscribe(() => {
+      if (this.isFormInitialized && !this.isSubmittingOrResetting) {
+        this.checkDeletedImages();
+      }
     });
-    this.addBlogsForm.get('en_blog_text')?.valueChanges.subscribe(() => {
-      this.checkDeletedImages();
+
+    this.addBlogsForm.get('en_blog_text')?.valueChanges.pipe(
+      debounceTime(500)
+    ).subscribe(() => {
+      if (this.isFormInitialized && !this.isSubmittingOrResetting) {
+        this.checkDeletedImages();
+      }
     });
+
+    // Mark form initialized after brief delay to avoid false deletions during component mounting
+    setTimeout(() => {
+      this.isFormInitialized = true;
+    }, 1000);
   }
 
   constructor() { }
@@ -182,19 +200,19 @@ export class BlogsAddComponent {
         ])
       );
 
-      this.addBlogsForm.patchValue(sanitizedBlog);
-
-      if (this.addBlogsForm.get('blog_date')?.value) {
-        this.addBlogsForm
-          .get('blog_date')
-          ?.setValue(new Date(this.addBlogsForm.get('blog_date')?.value));
-      }
-
-      // Track initial images
+      // Track initial images BEFORE patchValue
       const arText = sanitizedBlog['ar_blog_text'] || '';
       const enText = sanitizedBlog['en_blog_text'] || '';
       this.extractImageNames(arText).forEach(name => this.trackedImages.add(name));
       this.extractImageNames(enText).forEach(name => this.trackedImages.add(name));
+
+      this.addBlogsForm.patchValue(sanitizedBlog, { emitEvent: false });
+
+      if (this.addBlogsForm.get('blog_date')?.value) {
+        this.addBlogsForm
+          .get('blog_date')
+          ?.setValue(new Date(this.addBlogsForm.get('blog_date')?.value), { emitEvent: false });
+      }
     }
   }
 
@@ -224,22 +242,25 @@ export class BlogsAddComponent {
     }
 
     if (this.isEditing && this.addBlogsForm.valid) {
+      this.isSubmittingOrResetting = true;
       this._NgxSpinnerService.show('square-jelly-box');
       this.blogsService.updateBlog(this.currentBlogId, formData).subscribe({
         next: (response) => {
+          this.trackedImages.clear(); // Clear tracked images so none are deleted on reset
           this._MessageService.add({
             severity: 'success',
             summary: 'Blog Updated',
             detail: 'Blog Has Been Updated Successfully!',
           });
-          this.addBlogsForm.reset();
-          this.addBlogsForm.get('post_content')?.setValue('');
+          this.addBlogsForm.reset({}, { emitEvent: false });
+          this.addBlogsForm.get('post_content')?.setValue('', { emitEvent: false });
           this._NgxSpinnerService.hide('square-jelly-box');
           setTimeout(() => {
             this._Router.navigate(['/dashboard/blogs']);
           }, 500);
         },
         error: (err) => {
+          this.isSubmittingOrResetting = false;
           this._MessageService.add({
             severity: 'error',
             summary: 'Update Error!',
@@ -249,9 +270,11 @@ export class BlogsAddComponent {
         },
       });
     } else {
+      this.isSubmittingOrResetting = true;
       this._NgxSpinnerService.show('square-jelly-box');
       this.blogsService.addBlog(formData).subscribe({
         next: (response) => {
+          this.trackedImages.clear(); // Clear tracked images so none are deleted on reset
           this.clearInputs();
           this._MessageService.add({
             severity: 'success',
@@ -262,6 +285,7 @@ export class BlogsAddComponent {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         },
         error: (err) => {
+          this.isSubmittingOrResetting = false;
           this._MessageService.add({
             severity: 'error',
             summary: 'Published Error!',
@@ -274,13 +298,20 @@ export class BlogsAddComponent {
   }
 
   clearInputs(): void {
-    this.addBlogsForm.reset();
-    this.addBlogsForm.get('blog_date')?.setValue(new Date());
-    this.addBlogsForm.get('en_blog_text')?.setValue('');
-    this.addBlogsForm.get('ar_blog_text')?.setValue('');
-    this.addBlogsForm.get('active_status')?.setValue(1);
+    this.isSubmittingOrResetting = true;
+    this.trackedImages.clear();
+    this.addBlogsForm.reset({}, { emitEvent: false });
+    this.addBlogsForm.get('blog_date')?.setValue(new Date(), { emitEvent: false });
+    this.addBlogsForm.get('en_blog_text')?.setValue('', { emitEvent: false });
+    this.addBlogsForm.get('ar_blog_text')?.setValue('', { emitEvent: false });
+    this.addBlogsForm.get('active_status')?.setValue(1, { emitEvent: false });
     console.log(this.fileUpload);
-    (this.fileUpload as FileUpload).clear();
+    if (this.fileUpload) {
+      (this.fileUpload as FileUpload).clear();
+    }
+    setTimeout(() => {
+      this.isSubmittingOrResetting = false;
+    }, 500);
   }
 
   onFileSelect(event: any): void {
@@ -313,8 +344,17 @@ export class BlogsAddComponent {
   }
 
   checkDeletedImages(): void {
+    if (!this.isFormInitialized || this.isSubmittingOrResetting) {
+      return;
+    }
+
     const arText = this.addBlogsForm.get('ar_blog_text')?.value || '';
     const enText = this.addBlogsForm.get('en_blog_text')?.value || '';
+
+    // Safety check: Do not delete if both texts are completely empty (e.g. during reset)
+    if (!arText && !enText && this.trackedImages.size > 0) {
+      return;
+    }
 
     const currentImages = new Set<string>([
       ...this.extractImageNames(arText),
@@ -367,7 +407,7 @@ export class BlogsAddComponent {
 
   options_EN: JoditConfig = {
     uploader: {
-      url: 'about:blank',
+      url: WEB_SITE_BASE_URL + 'resizeImage',
 
       insertImageAsBase64URI: false,
       method: 'POST',
@@ -376,7 +416,7 @@ export class BlogsAddComponent {
       filesVariableName: () => 'post_image',
       pathVariableName: '',
       withCredentials: false,
-      data: () => new FormData(), // ✅ Prevents Jodit from appending 'source'
+      data: null,
       processFileName: function (
         key: string,
         file: File,
@@ -390,7 +430,6 @@ export class BlogsAddComponent {
       },
 
       prepareData: async (formData: FormData) => {
-        // ✅ Get all images from FormData
         const files: File[] = [];
         formData.forEach((value, key) => {
           if (key === 'post_image' && value instanceof File) {
@@ -398,26 +437,45 @@ export class BlogsAddComponent {
           }
         });
 
-        // ✅ If no images found, return FormData unchanged
         if (!files.length) {
-          console.warn('⚠️ No images found in FormData.');
           return formData;
         }
 
-        // ✅ Process each image asynchronously
-        this.showLoader(); // Show loader before upload
-        for (const file of files) {
-          await this.uploadImage_EN(file);
+        this.showLoader();
+        for (let i = 0; i < files.length; i++) {
+          const compressed = await this.compressImage(files[i]);
+          if (compressed) {
+            const uniqueFilename = `${Date.now()}-${Math.random()
+              .toString(36)
+              .substring(2, 10)}-${compressed.name}`;
+            formData.set('post_image', compressed, uniqueFilename);
+          }
         }
-        this.hideLoader(); // Hide loader after upload
+        this.hideLoader();
 
-        // ✅ Return empty FormData since each image is uploaded separately
-        return new FormData(); // Prevents Jodit from sending any images itself
+        return formData;
       },
 
-      isSuccess: (resp: IUploaderAnswer): boolean => false,
+      isSuccess: (resp: any): boolean => {
+        return !!(resp && resp.success);
+      },
 
-      process: (resp: any): any => '',
+      process: (resp: any): IUploaderData => {
+        const imageUrl = resp?.success || '';
+        if (imageUrl) {
+          const cleanUrl = imageUrl.split('?')[0];
+          const imageName = cleanUrl.split('/').pop();
+          if (imageName) {
+            this.trackedImages.add(imageName);
+          }
+        }
+        return {
+          files: imageUrl ? [imageUrl] : [],
+          isImages: [true],
+          path: '',
+          baseurl: '',
+        };
+      },
 
       defaultHandlerError: (e: Error) => {
         console.error('❌ Jodit Upload Error:', e.message);
@@ -429,10 +487,17 @@ export class BlogsAddComponent {
 
       contentType: (file: File) => file.type,
       getMessage: function (this: IUploader, resp: IUploaderAnswer): string {
-        throw new Error('Function not implemented.');
+        return '';
       },
-      defaultHandlerSuccess: function (resp: IUploaderData): void {
-        throw new Error('Function not implemented.');
+      defaultHandlerSuccess: function (this: any, resp: IUploaderData): void {
+        const j = this.j || this;
+        if (resp.files && resp.files.length) {
+          resp.files.forEach((file: string) => {
+            if (j && j.selection) {
+              j.selection.insertImage(file);
+            }
+          });
+        }
       },
     },
 
@@ -451,14 +516,12 @@ export class BlogsAddComponent {
         const items = event.clipboardData?.items;
         if (!items) return;
 
-        // event.preventDefault(); // Prevent default paste behavior
         let hasImage = false;
         this.showLoader(); // Show loader before upload
 
         const uploadPromises: Promise<void>[] = [];
 
         for (const item of Array.from(items)) {
-          // Ensure iteration works
           if (item.kind === 'file' && item.type.startsWith('image/')) {
             const file = item.getAsFile();
             console.log(file);
@@ -476,8 +539,6 @@ export class BlogsAddComponent {
         }
         this.hideLoader(); // Hide loader after all images finish uploading
       },
-
-      // ✅ Handle inserting images manually
     },
     spellcheck: true,
     language: 'en',
@@ -494,8 +555,7 @@ export class BlogsAddComponent {
   };
   options_AR: JoditConfig = {
     uploader: {
-
-      url: 'about:blank',
+      url: WEB_SITE_BASE_URL + 'resizeImage',
 
       insertImageAsBase64URI: false,
       method: 'POST',
@@ -504,7 +564,7 @@ export class BlogsAddComponent {
       filesVariableName: () => 'post_image',
       pathVariableName: '',
       withCredentials: false,
-      data: () => new FormData(), // ✅ Prevents Jodit from appending 'source'
+      data: null,
       processFileName: function (
         key: string,
         file: File,
@@ -518,7 +578,6 @@ export class BlogsAddComponent {
       },
 
       prepareData: async (formData: FormData) => {
-        // ✅ Get all images from FormData
         const files: File[] = [];
         formData.forEach((value, key) => {
           if (key === 'post_image' && value instanceof File) {
@@ -526,26 +585,45 @@ export class BlogsAddComponent {
           }
         });
 
-        // ✅ If no images found, return FormData unchanged
         if (!files.length) {
-          console.warn('⚠️ No images found in FormData.');
           return formData;
         }
 
-        // ✅ Process each image asynchronously
-        this.showLoader(); // Show loader before upload
-        for (const file of files) {
-          await this.uploadImage_AR(file);
+        this.showLoader();
+        for (let i = 0; i < files.length; i++) {
+          const compressed = await this.compressImage(files[i]);
+          if (compressed) {
+            const uniqueFilename = `${Date.now()}-${Math.random()
+              .toString(36)
+              .substring(2, 10)}-${compressed.name}`;
+            formData.set('post_image', compressed, uniqueFilename);
+          }
         }
-        this.hideLoader(); // Hide loader after upload
+        this.hideLoader();
 
-        // ✅ Return empty FormData since each image is uploaded separately
-        return new FormData(); // Prevents Jodit from sending any images itself
+        return formData;
       },
 
-      isSuccess: (resp: IUploaderAnswer): boolean => false,
+      isSuccess: (resp: any): boolean => {
+        return !!(resp && resp.success);
+      },
 
-      process: (resp: any): any => '',
+      process: (resp: any): IUploaderData => {
+        const imageUrl = resp?.success || '';
+        if (imageUrl) {
+          const cleanUrl = imageUrl.split('?')[0];
+          const imageName = cleanUrl.split('/').pop();
+          if (imageName) {
+            this.trackedImages.add(imageName);
+          }
+        }
+        return {
+          files: imageUrl ? [imageUrl] : [],
+          isImages: [true],
+          path: '',
+          baseurl: '',
+        };
+      },
 
       defaultHandlerError: (e: Error) => {
         console.error('❌ Jodit Upload Error:', e.message);
@@ -557,10 +635,17 @@ export class BlogsAddComponent {
 
       contentType: (file: File) => file.type,
       getMessage: function (this: IUploader, resp: IUploaderAnswer): string {
-        throw new Error('Function not implemented.');
+        return '';
       },
-      defaultHandlerSuccess: function (resp: IUploaderData): void {
-        throw new Error('Function not implemented.');
+      defaultHandlerSuccess: function (this: any, resp: IUploaderData): void {
+        const j = this.j || this;
+        if (resp.files && resp.files.length) {
+          resp.files.forEach((file: string) => {
+            if (j && j.selection) {
+              j.selection.insertImage(file);
+            }
+          });
+        }
       },
     },
 
