@@ -7,7 +7,8 @@
           <!-- Current Image Display -->
           <div *ngIf="isEditing && currentImageSrc" class="mb-3 text-center">
             <p class="text-gray-500 mb-2">Current Service Image:</p>
-            <img [src]="currentImageSrc" alt="Current Image" style="max-height: 200px; max-width: 100%; border-radius: 6px; border: 1px solid #ddd;" />
+            <img [src]="currentImageSrc" alt="Current Image"
+              style="max-height: 200px; max-width: 100%; border-radius: 6px; border: 1px solid #ddd;" />
           </div>
           <div class="p-field">
             <p-fileUpload #fileUpload name="main_image" accept="image/*" [auto]="true" [chooseLabel]="'Choose Image'"
@@ -36,7 +37,7 @@
         </div>
         <div class="col-12 mt-0">
           <div class="p-field">
-            <ngx-jodit formControlName="ar_service_text" dir="rtl"></ngx-jodit>
+            <ngx-jodit formControlName="ar_service_text" dir="rtl" [options]="options_AR" #ngxJoditAR></ngx-jodit>
           </div>
         </div>
       </p-card>
@@ -49,7 +50,47 @@
         </div>
         <div class="col-12 mt-0">
           <div class="p-field">
-            <ngx-jodit formControlName="en_service_text"></ngx-jodit>
+            <ngx-jodit formControlName="en_service_text" [options]="options_EN" #ngxJoditEn></ngx-jodit>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Call to Action (CTA) -->
+      <p-card header="Call to Action (CTA)" styleClass="p-2 mb-3">
+        <div class="p-field mb-3">
+          <label for="service_cta_first_title" class="font-medium text-gray-700 block mb-2">
+            CTA First Title <span class="text-gray-400 font-normal text-sm">(Optional)</span>
+          </label>
+          <input id="service_cta_first_title" type="text" pInputText formControlName="cta_first_title"
+            placeholder="Enter CTA First Title" class="p-inputtext-lg" dir="auto" />
+        </div>
+        <div class="p-field">
+          <label for="service_cta_second_title" class="font-medium text-gray-700 block mb-2">
+            CTA Second Title <span class="text-gray-400 font-normal text-sm">(Optional)</span>
+          </label>
+          <input id="service_cta_second_title" type="text" pInputText formControlName="cta_second_title"
+            placeholder="Enter CTA Second Title" class="p-inputtext-lg" dir="auto" />
+        </div>
+      </p-card>
+
+      <!-- en_script_text -->
+      <p-card header="(EN) script text" styleClass="p-2 mb-3">
+        <div class="col-12 mt-0">
+          <div class="p-field mb-3">
+            <textarea variant="filled" class="w-full" rows="5" cols="30" pInputTextarea formControlName="en_script_text"
+              placeholder="add en_script_text">
+            </textarea>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- ar_script_text -->
+      <p-card header="(AR) script text" styleClass="p-2 mb-3">
+        <div class="col-12 mt-0">
+          <div class="p-field mb-3">
+            <textarea variant="filled" class="w-full" rows="5" cols="30" pInputTextarea formControlName="ar_script_text"
+              placeholder="add (AR) script text">
+            </textarea>
           </div>
         </div>
       </p-card>

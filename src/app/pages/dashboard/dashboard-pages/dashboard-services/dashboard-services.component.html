@@ -57,6 +57,7 @@
             <th>Arabic Title</th>
             <th>Status</th>
             <th>Home</th>
+            <th>Nav</th>
             <th class="text-center">Edit</th>
             <th class="text-center">Gallery</th>
           </tr>
@@ -90,6 +91,14 @@
               />
             </td>
             <td>
+              <p-inputSwitch
+                [(ngModel)]="project.nav_status"
+                [trueValue]="1"
+                [falseValue]="0"
+                (onChange)="toggleNavStatus(project)"
+              />
+            </td>
+            <td>
               <button
                 pButton
                 icon="pi pi-pencil"
@@ -110,7 +119,7 @@
         <!-- No Data Message -->
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td colspan="9" style="height: 50vh">
+            <td colspan="10" style="height: 50vh">
               <app-no-data-found-banner></app-no-data-found-banner>
             </td>
           </tr>
@@ -123,63 +132,188 @@
 
   <p-dialog
     [(visible)]="galleryDialog"
-    [style]="{ width: '600px' }"
-    header="Manage Project Images"
+    [style]="{ width: '700px', maxWidth: '95vw' }"
+    header="Manage Service Images"
     [modal]="true"
     class="p-fluid"
     [draggable]="false"
+    (onHide)="resetGalleryUploadForm()"
   >
     <ng-template pTemplate="content">
-      <div class="field">
-        <div class="flex justify-between items-center">
-          <label class="block">Upload New Image</label>
-          <!-- <div class="text-center">
-            <span
-              [class]="{ 'text-danger': selectedProjectImages.length === 4 }"
-              class="block mb-2"
-              >Maximum 4 Images</span
-            >
-            {{ selectedProjectImages.length }} / 4
-          </div> -->
+      <!-- Upload New Image Section -->
+      <div class="p-4 mb-4 border rounded-lg bg-gray-50 border-gray-200">
+        <h5 class="font-bold text-base mb-3 text-primary flex items-center gap-2">
+          <i class="pi pi-cloud-upload"></i> Upload New Image
+        </h5>
+
+        <div class="field mb-3">
+          <label class="block text-sm font-semibold mb-1">
+            Select Image <span class="text-red-500">*</span>
+          </label>
+          <input
+            type="file"
+            #fileUploadRef
+            (change)="onGalleryFileSelect($event)"
+            accept="image/*"
+            class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+          />
+          <small *ngIf="galleryUploadSubmitted && !newGalleryImageFile" class="text-red-500 block mt-1">
+            Image is required.
+          </small>
         </div>
-        <!-- [disabled]="selectedProjectImages.length" -->
-        <input type="file" (change)="onUploadImage($event)" multiple />
+
+        <!-- Preview if selected -->
+        <div *ngIf="newGalleryImagePreview" class="mb-3 flex items-center gap-3">
+          <img
+            [src]="newGalleryImagePreview"
+            class="h-20 w-20 object-cover rounded border border-gray-300 shadow-sm"
+            alt="Preview"
+          />
+          <button
+            pButton
+            pRipple
+            type="button"
+            icon="pi pi-trash"
+            class="p-button-danger p-button-text p-button-sm"
+            label="Remove"
+            (click)="removeSelectedGalleryFile(); fileUploadRef.value = ''"
+          ></button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+          <div class="field">
+            <label class="block text-sm font-semibold mb-1">
+              Arabic Alt Text (ar_image_alt_text) <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              pInputText
+              [(ngModel)]="newGalleryArAlt"
+              placeholder="النص البديل بالعربية"
+              class="w-full"
+              dir="rtl"
+            />
+            <small *ngIf="galleryUploadSubmitted && !newGalleryArAlt.trim()" class="text-red-500 block mt-1">
+              Arabic alt text is required.
+            </small>
+          </div>
+
+          <div class="field">
+            <label class="block text-sm font-semibold mb-1">
+              English Alt Text (en_image_alt_text) <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              pInputText
+              [(ngModel)]="newGalleryEnAlt"
+              placeholder="English Alt Text"
+              class="w-full"
+            />
+            <small *ngIf="galleryUploadSubmitted && !newGalleryEnAlt.trim()" class="text-red-500 block mt-1">
+              English alt text is required.
+            </small>
+          </div>
+        </div>
+
+        <button
+          pButton
+          pRipple
+          type="button"
+          label="Upload Image"
+          icon="pi pi-upload"
+          class="p-button-primary"
+          (click)="uploadGalleryImage()"
+        ></button>
       </div>
 
+      <!-- Existing Images Section -->
       <div class="field">
-        <h5>
-          <span class="mx-2" style="color: #e7bf88">{{
-            selectedProjectImages.length
-          }}</span>
+        <h5 class="font-bold text-base mb-3 flex items-center gap-2">
+          <i class="pi pi-images"></i>
           Existing Images
+          <span class="px-2 py-0.5 text-xs bg-yellow-100 text-yellow-800 rounded-full font-bold">
+            {{ selectedProjectImages.length }}
+          </span>
         </h5>
-        <div *ngIf="selectedProjectImages.length > 0; else noImages">
+
+        <div *ngIf="selectedProjectImages.length > 0; else noImages" class="space-y-3">
           <div
             *ngFor="let image of selectedProjectImages"
-            class="image-container"
+            class="p-3 border rounded-lg border-gray-200 bg-white shadow-sm"
           >
-            <div class="border-2 p-3 mb-2">
-              <img
-                [src]="WEB_SITE_BASE_URL + 'service/' + image.main_image"
-                width="100"
-              />
-              <div class="my-3">
-                <label class="mb-2 block">Change Image num Status</label>
-                <p-inputSwitch
-                  [(ngModel)]="image.active_status"
-                  [trueValue]="1"
-                  [falseValue]="0"
-                  class="block"
-                  (onChange)="toggleImageStatus(image.id)"
+            <div class="flex flex-col sm:flex-row gap-4 items-start">
+              <div class="flex flex-col items-center gap-2 w-full sm:w-auto">
+                <img
+                  [src]="WEB_SITE_BASE_URL + 'service/' + image.main_image"
+                  class="w-28 h-24 object-cover rounded border border-gray-300 shadow-sm"
+                  [alt]="image.en_image_alt_text || 'Service Gallery Image'"
                 />
+                <div class="flex items-center gap-2">
+                  <label class="text-xs font-semibold">Active:</label>
+                  <p-inputSwitch
+                    [(ngModel)]="image.active_status"
+                    [trueValue]="1"
+                    [falseValue]="0"
+                    (onChange)="toggleImageStatus(image.id)"
+                  />
+                </div>
               </div>
-              <label class="block">Edit Image</label>
-              <input type="file" (change)="onUpdateImage(image.id, $event)" />
+
+              <div class="flex-1 w-full space-y-2">
+                <div>
+                  <label class="block text-xs font-bold mb-1">
+                    Arabic Alt Text (ar_image_alt_text) <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    pInputText
+                    [(ngModel)]="image.ar_image_alt_text"
+                    placeholder="النص البديل بالعربية"
+                    class="w-full p-inputtext-sm"
+                    dir="rtl"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold mb-1">
+                    English Alt Text (en_image_alt_text) <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    pInputText
+                    [(ngModel)]="image.en_image_alt_text"
+                    placeholder="English Alt Text"
+                    class="w-full p-inputtext-sm"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-xs font-bold mb-1">Change Image File (optional)</label>
+                  <input
+                    type="file"
+                    (change)="onExistingImageFileChange(image.id, $event)"
+                    accept="image/*"
+                    class="w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:bg-gray-100"
+                  />
+                </div>
+
+                <div class="text-right pt-1">
+                  <button
+                    pButton
+                    pRipple
+                    type="button"
+                    label="Update Image"
+                    icon="pi pi-check"
+                    class="p-button-sm p-button-success"
+                    (click)="onUpdateGalleryImage(image)"
+                  ></button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
         <ng-template #noImages>
-          <p>No images found</p>
+          <p class="text-gray-500 text-center py-4">No images found</p>
         </ng-template>
       </div>
     </ng-template>
@@ -191,7 +325,7 @@
         label="Close"
         icon="pi pi-times"
         class="p-button-text"
-        (click)="galleryDialog = false"
+        (click)="galleryDialog = false; resetGalleryUploadForm()"
       ></button>
     </ng-template>
   </p-dialog>

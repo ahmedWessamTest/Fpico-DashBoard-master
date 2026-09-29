@@ -53,6 +53,7 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 import { WEB_SITE_BASE_URL } from '../../../../../core/constants/WEB_SITE_BASE_UTL';
 import { IGetBlogById } from '../../../../../core/interfaces/dashboard/blogs/IGetBlogById';
 import { BlogsService } from '../../../../../core/services/dashboard/content/blogs.service';
+import { FpicoServicesService } from '../../../../../core/services/dashboard/content/fpico-services.service';
 
 @Component({
   selector: 'app-blogs-add',
@@ -117,6 +118,9 @@ export class BlogsAddComponent {
 
 
   blogsService = inject(BlogsService);
+  fpicoServicesService = inject(FpicoServicesService);
+
+  servicesList: { id: number; name: string }[] = [];
 
   _MessageService = inject(MessageService);
 
@@ -138,6 +142,7 @@ export class BlogsAddComponent {
   isSubmittingOrResetting: boolean = false;
 
   ngOnInit(): void {
+    this.loadServices();
     this.initForm();
     this.inOpenCheckCurrentBlog();
 
@@ -163,6 +168,29 @@ export class BlogsAddComponent {
     }, 1000);
   }
 
+  loadServices(): void {
+    this.fpicoServicesService.getAllServices().subscribe({
+      next: (response) => {
+        if (response && response.rows) {
+          this.servicesList = response.rows.map((service) => ({
+            id: service.id,
+            name: service.ar_service_title && service.en_service_title
+              ? `${service.ar_service_title} | ${service.en_service_title}`
+              : (service.ar_service_title || service.en_service_title || `Service #${service.id}`)
+          }));
+
+          const currentVal = this.addBlogsForm?.get('service_ids')?.value;
+          if (Array.isArray(currentVal) && currentVal.length > 0) {
+            this.addBlogsForm.get('service_ids')?.setValue([...currentVal], { emitEvent: false });
+          }
+        }
+      },
+      error: (err) => {
+        console.error('Failed to load services for blog', err);
+      }
+    });
+  }
+
   constructor() { }
 
   initForm() {
@@ -180,6 +208,11 @@ export class BlogsAddComponent {
       active_status: ['', Validators.required],
       en_script_text: [''],
       ar_script_text: ['', Validators.required],
+      ar_cta_first_title: [''],
+      ar_cta_second_title: [''],
+      en_cta_first_title: [''],
+      en_cta_second_title: [''],
+      service_ids: [[]],
     });
   }
 
@@ -192,6 +225,29 @@ export class BlogsAddComponent {
       this.isEditing = true;
       this.currentBlogId = BLOG_DETAILS.blog.id;
 
+      // Extract existing service IDs
+      let selectedServiceIds: number[] = [];
+      const blogData = BLOG_DETAILS.blog as any;
+      const rootData = BLOG_DETAILS as any;
+
+      if (Array.isArray(blogData?.services)) {
+        selectedServiceIds = blogData.services
+          .map((s: any) => (typeof s === 'object' && s !== null ? s.id : Number(s)))
+          .filter((id: number) => !isNaN(id));
+      } else if (Array.isArray(blogData?.service_ids)) {
+        selectedServiceIds = blogData.service_ids
+          .map((id: any) => Number(id))
+          .filter((id: number) => !isNaN(id));
+      } else if (Array.isArray(rootData?.services)) {
+        selectedServiceIds = rootData.services
+          .map((s: any) => (typeof s === 'object' && s !== null ? s.id : Number(s)))
+          .filter((id: number) => !isNaN(id));
+      } else if (Array.isArray(rootData?.service_ids)) {
+        selectedServiceIds = rootData.service_ids
+          .map((id: any) => Number(id))
+          .filter((id: number) => !isNaN(id));
+      }
+
       // Preprocess the blog object to replace null values with empty strings
       const sanitizedBlog = Object.fromEntries(
         Object.entries(BLOG_DETAILS.blog).map(([key, value]) => [
@@ -199,6 +255,9 @@ export class BlogsAddComponent {
           value ?? '',
         ])
       );
+
+      delete sanitizedBlog['service_ids'];
+      delete sanitizedBlog['services'];
 
       // Track initial images BEFORE patchValue
       const arText = sanitizedBlog['ar_blog_text'] || '';
@@ -213,6 +272,8 @@ export class BlogsAddComponent {
           .get('blog_date')
           ?.setValue(new Date(this.addBlogsForm.get('blog_date')?.value), { emitEvent: false });
       }
+
+      this.addBlogsForm.get('service_ids')?.setValue(selectedServiceIds, { emitEvent: false });
     }
   }
 
@@ -232,6 +293,28 @@ export class BlogsAddComponent {
     formData.append('en_script_text', formValues.en_script_text);
     formData.append('ar_script_text', formValues.ar_script_text);
 
+    formData.append('ar_cta_first_title', formValues.ar_cta_first_title ? formValues.ar_cta_first_title.trim() : '');
+    formData.append('ar_cta_second_title', formValues.ar_cta_second_title ? formValues.ar_cta_second_title.trim() : '');
+    formData.append('en_cta_first_title', formValues.en_cta_first_title ? formValues.en_cta_first_title.trim() : '');
+    formData.append('en_cta_second_title', formValues.en_cta_second_title ? formValues.en_cta_second_title.trim() : '');
+
+    const rawServiceIds = this.addBlogsForm.get('service_ids')?.value;
+    let serviceIds: number[] = [];
+    if (Array.isArray(rawServiceIds)) {
+      serviceIds = rawServiceIds
+        .map((s: any) => (typeof s === 'object' && s !== null ? Number(s.id) : Number(s)))
+        .filter((id: number) => !isNaN(id));
+    }
+
+    if (serviceIds.length > 0) {
+      serviceIds.forEach((id: number) => {
+        formData.append('service_ids[]', id.toString());
+      });
+    } else {
+      formData.append('service_ids[]', '');
+      formData.append('service_ids', JSON.stringify([]));
+    }
+
     console.log(formValues);
     if (this.fileUpload.files.length > 0) {
       formData.append(
@@ -241,7 +324,11 @@ export class BlogsAddComponent {
       );
     }
 
-    if (this.isEditing && this.addBlogsForm.valid) {
+    if (this.isEditing) {
+      if (this.addBlogsForm.invalid) {
+        this.addBlogsForm.markAllAsTouched();
+        return;
+      }
       this.isSubmittingOrResetting = true;
       this._NgxSpinnerService.show('square-jelly-box');
       this.blogsService.updateBlog(this.currentBlogId, formData).subscribe({
@@ -254,6 +341,7 @@ export class BlogsAddComponent {
           });
           this.addBlogsForm.reset({}, { emitEvent: false });
           this.addBlogsForm.get('post_content')?.setValue('', { emitEvent: false });
+          this.addBlogsForm.get('service_ids')?.setValue([], { emitEvent: false });
           this._NgxSpinnerService.hide('square-jelly-box');
           setTimeout(() => {
             this._Router.navigate(['/dashboard/blogs']);
@@ -270,6 +358,10 @@ export class BlogsAddComponent {
         },
       });
     } else {
+      if (this.addBlogsForm.invalid) {
+        this.addBlogsForm.markAllAsTouched();
+        return;
+      }
       this.isSubmittingOrResetting = true;
       this._NgxSpinnerService.show('square-jelly-box');
       this.blogsService.addBlog(formData).subscribe({
@@ -305,6 +397,7 @@ export class BlogsAddComponent {
     this.addBlogsForm.get('en_blog_text')?.setValue('', { emitEvent: false });
     this.addBlogsForm.get('ar_blog_text')?.setValue('', { emitEvent: false });
     this.addBlogsForm.get('active_status')?.setValue(1, { emitEvent: false });
+    this.addBlogsForm.get('service_ids')?.setValue([], { emitEvent: false });
     console.log(this.fileUpload);
     if (this.fileUpload) {
       (this.fileUpload as FileUpload).clear();

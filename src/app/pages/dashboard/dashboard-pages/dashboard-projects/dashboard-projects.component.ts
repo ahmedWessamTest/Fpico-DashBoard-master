@@ -11,7 +11,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
 import { ToastModule } from 'primeng/toast';
 import { WEB_SITE_BASE_URL_IMAGE } from '../../../../core/constants/WEB_SITE_BASE_UTL';
-import { IProject } from '../../../../core/interfaces/dashboard/files-sections/IProjects';
+import { IProject, IGalleryImage } from '../../../../core/interfaces/dashboard/files-sections/IProjects';
 import { ProjectGalleryService } from '../../../../core/services/dashboard/content/project-gallery.service';
 import { ProjectsService } from '../../../../core/services/dashboard/content/projects.service';
 import { LoadingDataBannerComponent } from '../../../../shared/components/loading-data-banner/loading-data-banner.component';
@@ -283,12 +283,23 @@ export class DashboardProjectsComponent {
     }
   }
 
-  selectedProjectImages: any[] = []; // Stores images of the selected project
+  selectedProjectImages: IGalleryImage[] = []; // Stores images of the selected project
   galleryDialog: boolean = false; // Controls the visibility of the image management dialog
   selectedProjectId!: number; // Stores the currently selected project's ID
 
+  // Upload new gallery image state
+  newGalleryImageFile: File | null = null;
+  newGalleryImagePreview: string | null = null;
+  newGalleryArAlt: string = '';
+  newGalleryEnAlt: string = '';
+  galleryUploadSubmitted: boolean = false;
+
+  // Existing gallery image replacement files mapped by imageId
+  existingImageFiles: { [imageId: number]: File } = {};
+
   openGalleryDialog(project: IProject) {
     this.selectedProjectId = project.id;
+    this.resetGalleryUploadForm();
     this.projectGalleryService.getSpecificProject(project.id).subscribe({
       next: (response: any) => {
         this.selectedProjectImages = response.row.images;
@@ -303,54 +314,150 @@ export class DashboardProjectsComponent {
       },
     });
   }
-  onUploadImage(event: any) {
-    if (event.target.files.length > 0) {
-      this._NgxSpinnerService.show('loaderGallery'); // Show loader
 
-      const files = event.target.files;
-      let uploadedCount = 0;
+  resetGalleryUploadForm() {
+    this.newGalleryImageFile = null;
+    this.newGalleryImagePreview = null;
+    this.newGalleryArAlt = '';
+    this.newGalleryEnAlt = '';
+    this.galleryUploadSubmitted = false;
+    this.existingImageFiles = {};
+  }
 
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const formData = new FormData();
-        formData.append('main_image', file, file.name);
-
-        this.projectGalleryService
-          .getUploadGalleryImage(this.selectedProjectId, formData)
-          .subscribe({
-            next: () => {
-              uploadedCount++;
-
-              this.messageService.add({
-                severity: 'success',
-                summary: 'Success',
-                detail: `Image ${file.name} uploaded successfully`,
-              });
-
-              // Refresh images only after the last upload
-              if (uploadedCount === files.length) {
-                this.openGalleryDialog({
-                  id: this.selectedProjectId,
-                } as IProject);
-                this._NgxSpinnerService.hide('loaderGallery'); // Hide loader
-              }
-            },
-            error: () => {
-              this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: `Failed to upload image ${file.name}`,
-              });
-
-              // Hide loader if all uploads (including failed ones) are processed
-              uploadedCount++;
-              if (uploadedCount === files.length) {
-                this._NgxSpinnerService.hide('loaderGallery');
-              }
-            },
-          });
-      }
+  onGalleryFileSelect(event: any) {
+    if (event.target.files && event.target.files.length > 0) {
+      const file: File = event.target.files[0];
+      this.newGalleryImageFile = file;
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.newGalleryImagePreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
     }
+  }
+
+  removeSelectedGalleryFile() {
+    this.newGalleryImageFile = null;
+    this.newGalleryImagePreview = null;
+  }
+
+  uploadGalleryImage() {
+    this.galleryUploadSubmitted = true;
+
+    if (!this.newGalleryImageFile) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Validation Error',
+        detail: 'Please select an image to upload',
+      });
+      return;
+    }
+
+    if (!this.newGalleryArAlt || !this.newGalleryArAlt.trim()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Validation Error',
+        detail: 'Arabic alt text (ar_image_alt_text) is required',
+      });
+      return;
+    }
+
+    if (!this.newGalleryEnAlt || !this.newGalleryEnAlt.trim()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Validation Error',
+        detail: 'English alt text (en_image_alt_text) is required',
+      });
+      return;
+    }
+
+    this._NgxSpinnerService.show('loaderGallery');
+    const formData = new FormData();
+    formData.append('main_image', this.newGalleryImageFile, this.newGalleryImageFile.name);
+    formData.append('ar_image_alt_text', this.newGalleryArAlt.trim());
+    formData.append('en_image_alt_text', this.newGalleryEnAlt.trim());
+
+    this.projectGalleryService
+      .getUploadGalleryImage(this.selectedProjectId, formData)
+      .subscribe({
+        next: () => {
+          this._NgxSpinnerService.hide('loaderGallery');
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Image uploaded successfully',
+          });
+          this.resetGalleryUploadForm();
+          this.openGalleryDialog({ id: this.selectedProjectId } as IProject);
+        },
+        error: () => {
+          this._NgxSpinnerService.hide('loaderGallery');
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to upload image',
+          });
+        },
+      });
+  }
+
+  onExistingImageFileChange(imageId: number, event: any) {
+    if (event.target.files && event.target.files.length > 0) {
+      this.existingImageFiles[imageId] = event.target.files[0];
+    }
+  }
+
+  onUpdateGalleryImage(image: IGalleryImage) {
+    if (!image.ar_image_alt_text || !image.ar_image_alt_text.trim()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Validation Error',
+        detail: 'Arabic alt text (ar_image_alt_text) is required',
+      });
+      return;
+    }
+
+    if (!image.en_image_alt_text || !image.en_image_alt_text.trim()) {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Validation Error',
+        detail: 'English alt text (en_image_alt_text) is required',
+      });
+      return;
+    }
+
+    this._NgxSpinnerService.show('loaderGallery');
+    const formData = new FormData();
+    formData.append('ar_image_alt_text', image.ar_image_alt_text.trim());
+    formData.append('en_image_alt_text', image.en_image_alt_text.trim());
+
+    if (this.existingImageFiles[image.id]) {
+      const file = this.existingImageFiles[image.id];
+      formData.append('main_image', file, file.name);
+    }
+
+    this.projectGalleryService
+      .updateGalleryImage(image.id, formData)
+      .subscribe({
+        next: () => {
+          this._NgxSpinnerService.hide('loaderGallery');
+          this.messageService.add({
+            severity: 'success',
+            summary: 'Success',
+            detail: 'Image updated successfully',
+          });
+          delete this.existingImageFiles[image.id];
+          this.openGalleryDialog({ id: this.selectedProjectId } as IProject);
+        },
+        error: () => {
+          this._NgxSpinnerService.hide('loaderGallery');
+          this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: 'Failed to update image',
+          });
+        },
+      });
   }
 
   toggleImageStatus(imageId: number) {
@@ -371,32 +478,5 @@ export class DashboardProjectsComponent {
         });
       },
     });
-  }
-  onUpdateImage(imageId: number, event: any) {
-    if (event.target.files.length > 0) {
-      const file = event.target.files[0];
-      const formData = new FormData();
-      formData.append('main_image', file, file.name);
-
-      this.projectGalleryService
-        .updateGalleryImage(imageId, formData)
-        .subscribe({
-          next: () => {
-            this.messageService.add({
-              severity: 'success',
-              summary: 'Success',
-              detail: 'Image updated successfully',
-            });
-            this.openGalleryDialog({ id: this.selectedProjectId } as IProject); // Refresh images
-          },
-          error: () => {
-            this.messageService.add({
-              severity: 'error',
-              summary: 'Error',
-              detail: 'Failed to update image',
-            });
-          },
-        });
-    }
   }
 }

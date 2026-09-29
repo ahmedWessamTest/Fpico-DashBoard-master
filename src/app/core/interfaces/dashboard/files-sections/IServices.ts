@@ -1,3 +1,5 @@
+import { IGalleryImage } from './IProjects';
+
 export interface IServices {
   rows: IService[];
 }
@@ -18,6 +20,12 @@ export interface IService {
   main_image: string;
   home_status: number;
   active_status: number;
+  nav_status?: number;
   created_at: string;
   updated_at: string;
+  cta_first_title?: string;
+  cta_second_title?: string;
+  ar_script_text?: string;
+  en_script_text?: string;
+  images?: IGalleryImage[];
 }

@@ -50,6 +50,47 @@
         </div>
       </p-card>
 
+      <!-- Call to Action (CTA) -->
+      <p-card header="Call to Action (CTA)" styleClass="p-2 mb-3">
+        <div class="row g-3">
+          <!-- (AR) CTA -->
+          <div class="col-md-6 col-12">
+            <div class="p-field mb-3">
+              <label for="ar_cta_first_title" class="font-medium text-gray-700 block mb-2">
+                (AR) CTA First Title <span class="text-gray-400 font-normal text-sm">(Optional)</span>
+              </label>
+              <input id="ar_cta_first_title" type="text" pInputText formControlName="ar_cta_first_title"
+                placeholder="(AR) CTA First Title" class="p-inputtext-lg" dir="rtl" />
+            </div>
+            <div class="p-field">
+              <label for="ar_cta_second_title" class="font-medium text-gray-700 block mb-2">
+                (AR) CTA Second Title <span class="text-gray-400 font-normal text-sm">(Optional)</span>
+              </label>
+              <input id="ar_cta_second_title" type="text" pInputText formControlName="ar_cta_second_title"
+                placeholder="(AR) CTA Second Title" class="p-inputtext-lg" dir="rtl" />
+            </div>
+          </div>
+
+          <!-- (EN) CTA -->
+          <div class="col-md-6 col-12">
+            <div class="p-field mb-3">
+              <label for="en_cta_first_title" class="font-medium text-gray-700 block mb-2">
+                (EN) CTA First Title <span class="text-gray-400 font-normal text-sm">(Optional)</span>
+              </label>
+              <input id="en_cta_first_title" type="text" pInputText formControlName="en_cta_first_title"
+                placeholder="(EN) CTA First Title" class="p-inputtext-lg" />
+            </div>
+            <div class="p-field">
+              <label for="en_cta_second_title" class="font-medium text-gray-700 block mb-2">
+                (EN) CTA Second Title <span class="text-gray-400 font-normal text-sm">(Optional)</span>
+              </label>
+              <input id="en_cta_second_title" type="text" pInputText formControlName="en_cta_second_title"
+                placeholder="(EN) CTA Second Title" class="p-inputtext-lg" />
+            </div>
+          </div>
+        </div>
+      </p-card>
+
       <!-- en_script_text -->
       <p-card header="(EN) script text" styleClass="p-2 mb-3">
         <!-- (EN) Content Editor with Warnings -->
@@ -82,6 +123,28 @@
           <div class="position-relative">
             <p-calendar formControlName="blog_date" [dateFormat]="'yy-mm-dd'" [showIcon]="true"
               styleClass="w-full ms-3"></p-calendar>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Related Services -->
+      <p-card header="Related Services" styleClass="mb-4">
+        <div class="col-12 mt-0">
+          <div class="p-field">
+            <label class="font-medium text-gray-700 block mb-2">Select Services</label>
+            <p-multiSelect
+              [options]="servicesList"
+              formControlName="service_ids"
+              optionLabel="name"
+              optionValue="id"
+              placeholder="Select Services"
+              display="chip"
+              [filter]="true"
+              filterBy="name"
+              [showClear]="true"
+              class="w-full"
+              styleClass="w-full"
+            />
           </div>
         </div>
       </p-card>

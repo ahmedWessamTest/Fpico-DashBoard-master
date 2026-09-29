@@ -20,4 +20,16 @@ export interface IProject {
   active_status: number;
   created_at: string;
   updated_at: string;
+  images?: IGalleryImage[];
+}
+
+export interface IGalleryImage {
+  id: number;
+  service_id?: number;
+  main_image: string;
+  active_status: number;
+  en_image_alt_text: string;
+  ar_image_alt_text: string;
+  created_at?: string;
+  updated_at?: string;
 }

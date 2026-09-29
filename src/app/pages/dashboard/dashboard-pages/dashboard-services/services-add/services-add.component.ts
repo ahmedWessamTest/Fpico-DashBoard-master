@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnInit, ViewChild } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -7,8 +7,9 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { NgxJoditComponent } from 'ngx-jodit';
+import { ActivatedRoute, Router } from '@angular/router';
+import 'jodit/esm/plugins/source/source.js';
+import { JoditConfig, NgxJoditComponent } from 'ngx-jodit';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { MessageService } from 'primeng/api';
 import { ButtonModule } from 'primeng/button';
@@ -28,7 +29,6 @@ import { FpicoServicesService } from '../../../../../core/services/dashboard/con
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    RouterLink,
     ButtonModule,
     CardModule,
     FileUploadModule,
@@ -43,7 +43,20 @@ import { FpicoServicesService } from '../../../../../core/services/dashboard/con
   styleUrl: './services-add.component.scss',
   providers: [MessageService],
 })
-export class ServicesAddComponent implements OnInit {
+export class ServicesAddComponent implements OnInit, AfterViewInit {
+  @ViewChild('ngxJoditAR') ngxJoditAR!: any;
+  @ViewChild('ngxJoditEn') ngxJoditEn!: any;
+
+  options_AR: JoditConfig = {
+    language: 'ar',
+    minHeight: 300,
+  };
+
+  options_EN: JoditConfig = {
+    language: 'en',
+    minHeight: 300,
+  };
+
   addServicesForm!: FormGroup;
   isEditing: boolean = false;
   currentServiceId: number = 0;
@@ -56,6 +69,19 @@ export class ServicesAddComponent implements OnInit {
   private _Router = inject(Router);
   private _MessageService = inject(MessageService);
   private _NgxSpinnerService = inject(NgxSpinnerService);
+
+  ngAfterViewInit(): void {
+    if (this.ngxJoditAR) {
+      this.ngxJoditAR.jodit?.registeredButtons.add({
+        22: { group: 'source', name: 'left' },
+      });
+    }
+    if (this.ngxJoditEn) {
+      this.ngxJoditEn.jodit?.registeredButtons.add({
+        22: { group: 'source', name: 'left' },
+      });
+    }
+  }
 
   ngOnInit(): void {
     this.initForm();
@@ -82,6 +108,10 @@ export class ServicesAddComponent implements OnInit {
       ar_meta_text: ['', Validators.required],
       home_status: [0, Validators.required],
       active_status: [1, Validators.required],
+      cta_first_title: [''],
+      cta_second_title: [''],
+      en_script_text: [''],
+      ar_script_text: [''],
     });
   }
 
@@ -158,6 +188,16 @@ export class ServicesAddComponent implements OnInit {
     formData.append('service_type', 'service');
     formData.append('home_status', formValues.home_status.toString());
     formData.append('active_status', formValues.active_status.toString());
+
+    if (formValues.cta_first_title && formValues.cta_first_title.trim() !== '') {
+      formData.append('cta_first_title', formValues.cta_first_title.trim());
+    }
+    if (formValues.cta_second_title && formValues.cta_second_title.trim() !== '') {
+      formData.append('cta_second_title', formValues.cta_second_title.trim());
+    }
+
+    formData.append('en_script_text', formValues.en_script_text || '');
+    formData.append('ar_script_text', formValues.ar_script_text || '');
 
     if (this.selectedImage) {
       formData.append(

@@ -1,5 +1,7 @@
 export interface IGetBlogById {
   blog: Blog;
+  services?: any[];
+  service_ids?: number[];
 }
 
 export interface Blog {
@@ -21,4 +23,12 @@ export interface Blog {
   updated_at: string;
   ar_script_text: string;
   en_script_text: string;
+  ar_cta_first_title?: string;
+  ar_cta_second_title?: string;
+  en_cta_first_title?: string;
+  en_cta_second_title?: string;
+  cta_first_title?: string;
+  cta_second_title?: string;
+  services?: any[];
+  service_ids?: number[];
 }

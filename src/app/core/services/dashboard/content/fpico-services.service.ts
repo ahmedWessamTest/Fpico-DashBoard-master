@@ -41,4 +41,11 @@ export class FpicoServicesService {
       {}
     );
   }
+
+  toggleNavStatus(id: number): Observable<any> {
+    return this._HttpClient.post<any>(
+      `${WEB_SITE_BASE_URL}service_toggle_nav/${id}`,
+      {}
+    );
+  }
 }
