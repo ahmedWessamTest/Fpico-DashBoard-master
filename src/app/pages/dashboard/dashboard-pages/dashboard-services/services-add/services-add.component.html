@@ -36,6 +36,16 @@
             class="p-inputtext-lg" dir="rtl" />
         </div>
         <div class="col-12 mt-0">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-medium text-gray-600">محتوى الخدمة (عربي)</span>
+            <button pButton type="button" icon="pi pi-eraser"
+              label="إزالة التنسيق تلقائياً"
+              class="p-button-outlined p-button-sm p-button-secondary text-xs"
+              (click)="removeFormat('ar')"
+              pTooltip="مسح كافة التنسيقات والألوان وخطوط Word تلقائياً مع الحفاظ على النص"
+              tooltipPosition="top">
+            </button>
+          </div>
           <div class="p-field">
             <ngx-jodit formControlName="ar_service_text" dir="rtl" [options]="options_AR" #ngxJoditAR></ngx-jodit>
           </div>
@@ -49,6 +59,16 @@
             class="p-inputtext-lg" />
         </div>
         <div class="col-12 mt-0">
+          <div class="flex justify-between items-center mb-2">
+            <span class="text-sm font-medium text-gray-600">Service Content (English)</span>
+            <button pButton type="button" icon="pi pi-eraser"
+              label="Remove Format Automatically"
+              class="p-button-outlined p-button-sm p-button-secondary text-xs"
+              (click)="removeFormat('en')"
+              pTooltip="Automatically remove all styles, colors, and formatting while keeping text"
+              tooltipPosition="top">
+            </button>
+          </div>
           <div class="p-field">
             <ngx-jodit formControlName="en_service_text" [options]="options_EN" #ngxJoditEn></ngx-jodit>
           </div>

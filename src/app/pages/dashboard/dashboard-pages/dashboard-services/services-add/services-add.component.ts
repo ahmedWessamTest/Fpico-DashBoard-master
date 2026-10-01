@@ -9,6 +9,7 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import 'jodit/esm/plugins/source/source.js';
+import 'jodit/esm/plugins/clean-html/clean-html.js';
 import { JoditConfig, NgxJoditComponent } from 'ngx-jodit';
 import { NgxSpinnerModule, NgxSpinnerService } from 'ngx-spinner';
 import { MessageService } from 'primeng/api';
@@ -19,6 +20,7 @@ import { InputSwitchModule } from 'primeng/inputswitch';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputTextareaModule } from 'primeng/inputtextarea';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 import { WEB_SITE_BASE_URL_IMAGE } from '../../../../../core/constants/WEB_SITE_BASE_UTL';
 import { FpicoServicesService } from '../../../../../core/services/dashboard/content/fpico-services.service';
 
@@ -36,6 +38,7 @@ import { FpicoServicesService } from '../../../../../core/services/dashboard/con
     InputTextModule,
     InputTextareaModule,
     ToastModule,
+    TooltipModule,
     NgxJoditComponent,
     NgxSpinnerModule,
   ],
@@ -50,11 +53,37 @@ export class ServicesAddComponent implements OnInit, AfterViewInit {
   options_AR: JoditConfig = {
     language: 'ar',
     minHeight: 300,
+    askBeforePasteHTML: false,
+    askBeforePasteFromWord: false,
+    defaultActionOnPaste: 'insert_clear_html',
+    extraButtons: [
+      {
+        name: 'cleanFormatAuto',
+        icon: 'eraser',
+        tooltip: 'إزالة التنسيق تلقائياً (Remove Formatting)',
+        exec: () => {
+          this.removeFormat('ar');
+        },
+      },
+    ],
   };
 
   options_EN: JoditConfig = {
     language: 'en',
     minHeight: 300,
+    askBeforePasteHTML: false,
+    askBeforePasteFromWord: false,
+    defaultActionOnPaste: 'insert_clear_html',
+    extraButtons: [
+      {
+        name: 'cleanFormatAuto',
+        icon: 'eraser',
+        tooltip: 'Remove Formatting Automatically',
+        exec: () => {
+          this.removeFormat('en');
+        },
+      },
+    ],
   };
 
   addServicesForm!: FormGroup;
@@ -258,5 +287,160 @@ export class ServicesAddComponent implements OnInit, AfterViewInit {
 
   onCancel(): void {
     this._Router.navigate(['/dashboard/services']);
+  }
+
+  /**
+   * Automatically cleans formatting, inline styles, font families, colors,
+   * classes and extraneous tags from HTML content.
+   */
+  cleanHtmlContent(html: string): string {
+    if (!html || !html.trim()) return '';
+
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+
+    // 1. Remove script, style, meta, link, iframe, etc.
+    const removeSelectors = ['script', 'style', 'meta', 'link', 'noscript', 'iframe'];
+    removeSelectors.forEach((sel) => {
+      doc.querySelectorAll(sel).forEach((el) => el.remove());
+    });
+
+    // 2. Remove HTML comments
+    const removeComments = (node: Node) => {
+      for (let i = node.childNodes.length - 1; i >= 0; i--) {
+        const child = node.childNodes[i];
+        if (child.nodeType === Node.COMMENT_NODE) {
+          node.removeChild(child);
+        } else if (child.nodeType === Node.ELEMENT_NODE) {
+          removeComments(child);
+        }
+      }
+    };
+    removeComments(doc.body);
+
+    // 3. Formatting tags to unwrap (preserve inner text, remove formatting wrapper)
+    const tagsToUnwrap = new Set([
+      'font',
+      'span',
+      'b',
+      'strong',
+      'i',
+      'em',
+      'u',
+      's',
+      'strike',
+      'mark',
+      'small',
+      'big',
+      'sub',
+      'sup',
+      'tt',
+    ]);
+
+    // 4. Attributes to remove from all remaining elements
+    const attrsToRemove = [
+      'style',
+      'class',
+      'id',
+      'color',
+      'face',
+      'size',
+      'bgcolor',
+      'background',
+      'align',
+      'valign',
+      'border',
+    ];
+
+    // Iteratively unwrap target tags
+    let found = true;
+    while (found) {
+      found = false;
+      const elements = Array.from(doc.body.querySelectorAll('*'));
+      for (const el of elements) {
+        const tagName = el.tagName.toLowerCase();
+        if (tagsToUnwrap.has(tagName) || tagName.includes(':')) {
+          found = true;
+          const parent = el.parentNode;
+          if (parent) {
+            while (el.firstChild) {
+              parent.insertBefore(el.firstChild, el);
+            }
+            parent.removeChild(el);
+          }
+        }
+      }
+    }
+
+    // 5. Remove unwanted attributes from remaining elements
+    const remainingElements = Array.from(doc.body.querySelectorAll('*'));
+    for (const el of remainingElements) {
+      attrsToRemove.forEach((attr) => el.removeAttribute(attr));
+      if (el.tagName.toLowerCase() === 'a') {
+        const href = el.getAttribute('href');
+        const target = el.getAttribute('target');
+        while (el.attributes.length > 0) {
+          el.removeAttribute(el.attributes[0].name);
+        }
+        if (href) el.setAttribute('href', href);
+        if (target) el.setAttribute('target', target);
+      }
+    }
+
+    let cleaned = doc.body.innerHTML.trim();
+
+    // Normalize non-breaking spaces
+    cleaned = cleaned.replace(/&nbsp;/g, ' ');
+
+    // Remove empty paragraphs
+    cleaned = cleaned.replace(/<p>\s*(<br\s*\/?>)?\s*<\/p>/gi, '');
+
+    // Ensure valid HTML paragraph if plain text
+    if (cleaned && !cleaned.startsWith('<')) {
+      cleaned = `<p>${cleaned}</p>`;
+    }
+
+    return cleaned;
+  }
+
+  /**
+   * Removes text formatting from the specified editor (ar or en) automatically
+   */
+  removeFormat(lang: 'ar' | 'en'): void {
+    const controlName = lang === 'ar' ? 'ar_service_text' : 'en_service_text';
+    const joditComponent = lang === 'ar' ? this.ngxJoditAR : this.ngxJoditEn;
+    const currentHtml = this.addServicesForm.get(controlName)?.value || '';
+
+    if (!currentHtml || !currentHtml.trim()) {
+      this._MessageService.add({
+        severity: 'info',
+        summary: 'Info',
+        detail:
+          lang === 'ar'
+            ? 'لا يوجد نص لإزالة التنسيق منه'
+            : 'No text to remove formatting from',
+      });
+      return;
+    }
+
+    const cleanedHtml = this.cleanHtmlContent(currentHtml);
+
+    // Update form control
+    this.addServicesForm.get(controlName)?.setValue(cleanedHtml);
+    this.addServicesForm.get(controlName)?.markAsDirty();
+
+    // Update Jodit editor instance directly if available
+    if (joditComponent?.jodit) {
+      joditComponent.jodit.value = cleanedHtml;
+    }
+
+    this._MessageService.add({
+      severity: 'success',
+      summary: 'Success',
+      detail:
+        lang === 'ar'
+          ? 'تمت إزالة كافة تنسيقات النص بنجاح'
+          : 'Text formatting removed successfully',
+    });
   }
 }
