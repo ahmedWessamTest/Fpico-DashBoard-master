@@ -137,8 +137,10 @@ export class ServicesAddComponent implements OnInit, AfterViewInit {
       ar_meta_text: ['', Validators.required],
       home_status: [0, Validators.required],
       active_status: [1, Validators.required],
-      cta_first_title: [''],
-      cta_second_title: [''],
+      ar_cta_first_title: [''],
+      ar_cta_second_title: [''],
+      en_cta_first_title: [''],
+      en_cta_second_title: [''],
       en_script_text: [''],
       ar_script_text: [''],
     });
@@ -218,12 +220,10 @@ export class ServicesAddComponent implements OnInit, AfterViewInit {
     formData.append('home_status', formValues.home_status.toString());
     formData.append('active_status', formValues.active_status.toString());
 
-    if (formValues.cta_first_title && formValues.cta_first_title.trim() !== '') {
-      formData.append('cta_first_title', formValues.cta_first_title.trim());
-    }
-    if (formValues.cta_second_title && formValues.cta_second_title.trim() !== '') {
-      formData.append('cta_second_title', formValues.cta_second_title.trim());
-    }
+    formData.append('ar_cta_first_title', formValues.ar_cta_first_title ? formValues.ar_cta_first_title.trim() : '');
+    formData.append('ar_cta_second_title', formValues.ar_cta_second_title ? formValues.ar_cta_second_title.trim() : '');
+    formData.append('en_cta_first_title', formValues.en_cta_first_title ? formValues.en_cta_first_title.trim() : '');
+    formData.append('en_cta_second_title', formValues.en_cta_second_title ? formValues.en_cta_second_title.trim() : '');
 
     formData.append('en_script_text', formValues.en_script_text || '');
     formData.append('ar_script_text', formValues.ar_script_text || '');

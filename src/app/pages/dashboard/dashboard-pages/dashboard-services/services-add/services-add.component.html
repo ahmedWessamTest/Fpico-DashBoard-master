@@ -77,19 +77,42 @@
 
       <!-- Call to Action (CTA) -->
       <p-card header="Call to Action (CTA)" styleClass="p-2 mb-3">
-        <div class="p-field mb-3">
-          <label for="service_cta_first_title" class="font-medium text-gray-700 block mb-2">
-            CTA First Title <span class="text-gray-400 font-normal text-sm">(Optional)</span>
-          </label>
-          <input id="service_cta_first_title" type="text" pInputText formControlName="cta_first_title"
-            placeholder="Enter CTA First Title" class="p-inputtext-lg" dir="auto" />
-        </div>
-        <div class="p-field">
-          <label for="service_cta_second_title" class="font-medium text-gray-700 block mb-2">
-            CTA Second Title <span class="text-gray-400 font-normal text-sm">(Optional)</span>
-          </label>
-          <input id="service_cta_second_title" type="text" pInputText formControlName="cta_second_title"
-            placeholder="Enter CTA Second Title" class="p-inputtext-lg" dir="auto" />
+        <div class="row g-3">
+          <!-- (AR) CTA -->
+          <div class="col-md-6 col-12">
+            <div class="p-field mb-3">
+              <label for="ar_cta_first_title" class="font-medium text-gray-700 block mb-2">
+                (AR) CTA First Title <span class="text-gray-400 font-normal text-sm">(Optional)</span>
+              </label>
+              <input id="ar_cta_first_title" type="text" pInputText formControlName="ar_cta_first_title"
+                placeholder="(AR) CTA First Title" class="p-inputtext-lg" dir="rtl" />
+            </div>
+            <div class="p-field">
+              <label for="ar_cta_second_title" class="font-medium text-gray-700 block mb-2">
+                (AR) CTA Second Title <span class="text-gray-400 font-normal text-sm">(Optional)</span>
+              </label>
+              <input id="ar_cta_second_title" type="text" pInputText formControlName="ar_cta_second_title"
+                placeholder="(AR) CTA Second Title" class="p-inputtext-lg" dir="rtl" />
+            </div>
+          </div>
+
+          <!-- (EN) CTA -->
+          <div class="col-md-6 col-12">
+            <div class="p-field mb-3">
+              <label for="en_cta_first_title" class="font-medium text-gray-700 block mb-2">
+                (EN) CTA First Title <span class="text-gray-400 font-normal text-sm">(Optional)</span>
+              </label>
+              <input id="en_cta_first_title" type="text" pInputText formControlName="en_cta_first_title"
+                placeholder="(EN) CTA First Title" class="p-inputtext-lg" />
+            </div>
+            <div class="p-field">
+              <label for="en_cta_second_title" class="font-medium text-gray-700 block mb-2">
+                (EN) CTA Second Title <span class="text-gray-400 font-normal text-sm">(Optional)</span>
+              </label>
+              <input id="en_cta_second_title" type="text" pInputText formControlName="en_cta_second_title"
+                placeholder="(EN) CTA Second Title" class="p-inputtext-lg" />
+            </div>
+          </div>
         </div>
       </p-card>
 

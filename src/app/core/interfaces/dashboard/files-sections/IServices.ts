@@ -23,6 +23,10 @@ export interface IService {
   nav_status?: number;
   created_at: string;
   updated_at: string;
+  ar_cta_first_title?: string;
+  ar_cta_second_title?: string;
+  en_cta_first_title?: string;
+  en_cta_second_title?: string;
   cta_first_title?: string;
   cta_second_title?: string;
   ar_script_text?: string;
